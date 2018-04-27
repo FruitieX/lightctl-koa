@@ -25,11 +25,12 @@ export enum StateType {
 
 // A light source, such as an RGB LED.
 export interface LightSource {
-  transitionStart: number; // time when transition started
-  prevState: HSVState; // state when transition started
+  state: HSVState; // state when transition started
+  //transitionStart: number; // time when transition started
+  //prevState: HSVState; // state when transition started
 
-  transitionEnd: number; // time when transition ends
-  nextState: HSVState; // reached at transitionEnd
+  //transitionEnd: number; // time when transition ends
+  //nextState: HSVState; // reached at transitionEnd
 }
 
 // A light fixture, possibly containing multiple light sources
@@ -38,24 +39,35 @@ export interface Luminaire {
   gateway: string;
   lightSources: LightSource[];
 
-  colors: HSVState[];
-  effects: string[];
+  // old luminaire state (for transitions)
+  oldColors: HSVState[];
+  oldEffects: string[];
+
+  // new (current) luminaire state
+  newColors: HSVState[];
+  newEffects: string[];
+
+  transitionTime: number; // duration of transition in milliseconds
+  transitionStart: number; // time when transition started
 }
 
-export interface SceneCmd {
-  target: string;
-  type: StateType;
-  transitionTime?: number;
-  useExistingTransition?: boolean;
-  state: HSVState | RGBState | CTState;
+export interface SceneEntity {
+  id: string;
+  brightness?: number;
+
+  // optional overrides
+  effects?: string[];
+  colors?: AnyState[];
 }
 
 export interface Scene {
-  name: string;
-  cmds: SceneCmd[];
+  id: string;
+  effects: string[];
+  colors: AnyState[];
+  entities: SceneEntity[];
 }
 
 export interface Group {
-  name: string;
-  luminaires: Luminaire[];
+  id: string;
+  luminaires: (Luminaire | string)[];
 }

@@ -41,8 +41,7 @@
 import * as Koa from 'koa';
 import { createSocket, AddressInfo } from 'dgram';
 import { Luminaire, HSVState } from '../../types';
-import { getCurrentState } from '../core/lightsource';
-import { registerLuminaire, getLuminaire } from '../core/luminaire';
+import { registerLuminaire, getLuminaire } from '../../core/luminaire';
 
 const udpServer = createSocket('udp4');
 
@@ -51,7 +50,7 @@ interface Client {
   id: string;
   gammaCorrection: number[];
   contrast: number[];
-  luminaire: Luminaire;
+  luminaireId: string;
   sendInterval?: NodeJS.Timer;
   timeout?: NodeJS.Timer;
 }
@@ -69,10 +68,11 @@ interface Options {
 const clients: Client[] = [];
 
 const send = (client: Client) => () => {
-  const array = new Uint8Array(client.luminaire.lightSources.length * 3 + 7); // + 1 is dither flag, + 3 are rgb gamma correction values, + 3 is for contrast
+  const luminaire = getLuminaire(client.luminaireId);
+  const array = new Uint8Array(luminaire.lightSources.length * 3 + 7); // + 1 is dither flag, + 3 are rgb gamma correction values, + 3 is for contrast
 
-  client.luminaire.lightSources.forEach((source, index) => {
-    const currentState: HSVState = getCurrentState(source);
+  luminaire.lightSources.forEach((source, index) => {
+    const currentState = source.state;
 
     array[index * 3 + 0] = Math.floor(currentState.h / 360 * 256); // hue
     array[index * 3 + 1] = Math.floor(currentState.s / 100 * 256); // saturation
@@ -111,17 +111,14 @@ const send = (client: Client) => () => {
     //array[index * 3 + 2] = b_; //b_;
   });
 
-  array[client.luminaire.lightSources.length * 3] = 4; // enable dithering with 4 steps
+  array[luminaire.lightSources.length * 3] = 4; // enable dithering with 4 steps
 
-  array[client.luminaire.lightSources.length * 3 + 1] =
-    client.gammaCorrection[0]; // red gamma correction
-  array[client.luminaire.lightSources.length * 3 + 2] =
-    client.gammaCorrection[1]; // green gamma correction
-  array[client.luminaire.lightSources.length * 3 + 3] =
-    client.gammaCorrection[2]; // blue gamma correction
-  array[client.luminaire.lightSources.length * 3 + 4] = client.contrast[0]; // red contrast
-  array[client.luminaire.lightSources.length * 3 + 5] = client.contrast[1]; // green contrast
-  array[client.luminaire.lightSources.length * 3 + 6] = client.contrast[2]; // blue contrast
+  array[luminaire.lightSources.length * 3 + 1] = client.gammaCorrection[0]; // red gamma correction
+  array[luminaire.lightSources.length * 3 + 2] = client.gammaCorrection[1]; // green gamma correction
+  array[luminaire.lightSources.length * 3 + 3] = client.gammaCorrection[2]; // blue gamma correction
+  array[luminaire.lightSources.length * 3 + 4] = client.contrast[0]; // red contrast
+  array[luminaire.lightSources.length * 3 + 5] = client.contrast[1]; // green contrast
+  array[luminaire.lightSources.length * 3 + 6] = client.contrast[2]; // blue contrast
 
   udpServer.send(
     <Buffer>array,
@@ -154,7 +151,7 @@ const setClientTimeout = (client: Client) => {
   }, 30000);
 };
 
-export const register = (app: Koa, options: Options) => {
+export const register = async (app: Koa, options: Options) => {
   const gammaCorrection = options.gammaCorrection || {};
   const contrast = options.contrast || {};
 
@@ -188,7 +185,7 @@ export const register = (app: Koa, options: Options) => {
         id,
         gammaCorrection: gammaCorrection[id] || [220, 250, 180],
         contrast: contrast[id] || [255, 255, 255],
-        luminaire,
+        luminaireId: luminaire.id,
       };
 
       setClientTimeout(client);

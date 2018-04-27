@@ -2,18 +2,12 @@ import cosmiconfig = require('cosmiconfig');
 import { Scene, Group, Luminaire } from './types';
 
 interface Config {
-  port: number;
-  'core/group': { [propName: string]: Group };
-  'core/scene': { [propName: string]: Scene };
+  './plugins/group'?: { [propName: string]: Group };
+  './plugins/scene'?: { [propName: string]: Scene };
   [propName: string]: any; // TODO
 }
 
-const defaultConfig = {
-  port: 5678,
-  groups: {},
-  scenes: {},
-  plugins: {},
-};
+const defaultConfig: Config = {};
 
 const explorer = cosmiconfig('lightctl', {
   sync: true,

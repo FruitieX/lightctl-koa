@@ -44,3 +44,45 @@ export const convertTo = (orig: AnyState, to: StateType): AnyState => {
     };
   }
 };
+
+export const calculateTransitionProgress = (
+  start: number,
+  duration: number,
+  curTime: number,
+): number => {
+  if (!duration) {
+    return 1;
+  }
+
+  const progress = (curTime - start) / duration;
+
+  // Bounded to [0, 1]
+  return Math.max(0, Math.min(progress, 1));
+};
+
+export const getColorTransition = (
+  oldColor: HSVState,
+  newColor: HSVState,
+  progress: number,
+): HSVState => {
+  // Directly return oldColor/newColor for 0/1 progress
+  if (progress === 0) {
+    return oldColor;
+  } else if (progress === 1) {
+    return newColor;
+  }
+
+  // Convert HSV to RGB as HSV is unsuitable for transitions
+  const oldRgb = <RGBState>convertTo(oldColor, StateType.RGB);
+  const newRgb = <RGBState>convertTo(newColor, StateType.RGB);
+
+  // Perform the transition in RGB color space
+  const curRgb: RGBState = {
+    r: oldRgb.r * (1 - progress) + newRgb.r * progress,
+    g: oldRgb.g * (1 - progress) + newRgb.g * progress,
+    b: oldRgb.b * (1 - progress) + newRgb.b * progress,
+  };
+
+  // Convert RGB back to HSV then return result
+  return <HSVState>convertTo(curRgb, StateType.HSV);
+};
