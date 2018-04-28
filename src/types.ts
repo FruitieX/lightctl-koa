@@ -51,7 +51,14 @@ export interface Luminaire {
   transitionStart: number; // time when transition started
 }
 
-export interface SceneEntity {
+export interface LuminaireUpdateFields {
+  id: string;
+  colors: HSVState[];
+  effects: string[];
+  transitionTime?: number;
+}
+
+export interface SceneTarget {
   id: string;
   brightness?: number;
 
@@ -64,10 +71,10 @@ export interface Scene {
   id: string;
   effects: string[];
   colors: AnyState[];
-  entities: SceneEntity[];
+  targets: SceneTarget[];
 }
 
 export interface Group {
   id: string;
-  luminaires: (Luminaire | string)[];
+  luminaires: string[];
 }
