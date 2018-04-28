@@ -1,4 +1,9 @@
-import { HSVState, LightSource, Luminaire } from '../types';
+import {
+  HSVState,
+  LightSource,
+  Luminaire,
+  LuminaireUpdateFields,
+} from '../types';
 import { createLightSource } from './lightsource';
 import * as Koa from 'koa';
 import { applyEffectsAll } from './effect';
@@ -60,6 +65,11 @@ export const registerLuminaire = (
   state.app.emit('luminaireRegistered', copy);
   return copy;
 };
+
+/**
+ * Returns true if luminaire with given id exists, false otherwise.
+ */
+export const luminaireExists = (id: string): boolean => !!state.luminaires[id];
 
 /**
  * Recalculates current light source color values based on luminaire colors,
@@ -128,12 +138,12 @@ export const getLuminaire = (id: string): Luminaire => {
  * Update luminaire by id. Returns luminaire with recalculated lightSource
  * colors (also emitted to listeners). Throws error if luminaire not found.
  */
-export const updateLuminaire = (
-  id: string,
-  colors: HSVState[],
-  effects: string[],
+const updateLuminaire = ({
+  id,
+  colors,
+  effects,
   transitionTime = 500,
-): Luminaire => {
+}: LuminaireUpdateFields): Luminaire => {
   if (!state.app) throw new Error('Plugin not yet initialized');
 
   const luminaire = state.luminaires[id];
@@ -152,8 +162,24 @@ export const updateLuminaire = (
 
   // TODO: this is not a deep copy
   const copy = { ...luminaire };
-  state.app.emit('luminaireUpdated', copy);
+  //state.app.emit('luminairesUpdated', [copy]);
   return copy;
+};
+
+/**
+ * Update multiple luminaires at once. Returns updated luminaires with
+ * recalculated light source colors (also emitted to listeners all at once).
+ * Throws error if any of the luminaires were not found.
+ */
+export const updateLuminaires = (
+  fieldsList: LuminaireUpdateFields[],
+): Luminaire[] => {
+  if (!state.app) throw new Error('Plugin not yet initialized');
+
+  const luminaires = fieldsList.map(updateLuminaire);
+
+  state.app.emit('luminairesUpdated', luminaires);
+  return luminaires;
 };
 
 export const register = async (app: Koa, options: Options) => {
