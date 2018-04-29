@@ -1,21 +1,22 @@
-import { HSVState } from '../types';
+import { HSVState, Effect } from '../types';
 
 export const applyEffectsAll = (
-  effectNames: string[],
+  effects: Effect[],
   colors: HSVState[],
   luminaireId: string,
   numLightSources: number,
 ): HSVState[] => {
-  return effectNames.reduce(
-    (accumulatedColors: HSVState[], effectName, effectIndex) => {
-      const effect = require(`../${effectName}`);
+  return effects.reduce(
+    (accumulatedColors: HSVState[], effect, effectIndex) => {
+      const effectFn = require(`../${effect.id}`);
 
-      return effect(
+      return effectFn(
         accumulatedColors,
+        effect.options,
         luminaireId,
         numLightSources,
         effectIndex,
-        effectNames.length,
+        effects.length,
       );
     },
     colors,

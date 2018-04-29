@@ -41,11 +41,11 @@ export interface Luminaire {
 
   // old luminaire state (for transitions)
   oldColors: HSVState[];
-  oldEffects: string[];
+  oldEffects: Effect[];
 
   // new (current) luminaire state
   newColors: HSVState[];
-  newEffects: string[];
+  newEffects: Effect[];
 
   transitionTime: number; // duration of transition in milliseconds
   transitionStart: number; // time when transition started
@@ -54,7 +54,7 @@ export interface Luminaire {
 export interface LuminaireUpdateFields {
   id: string;
   colors: HSVState[];
-  effects: string[];
+  effects: Effect[];
   transitionTime?: number;
 }
 
@@ -63,13 +63,13 @@ export interface SceneTarget {
   brightness?: number;
 
   // optional overrides
-  effects?: string[];
+  effects?: Effect[];
   colors?: AnyState[];
 }
 
 export interface Scene {
   id: string;
-  effects: string[];
+  effects: Effect[];
   colors: AnyState[];
   targets: SceneTarget[];
 }
@@ -77,4 +77,13 @@ export interface Scene {
 export interface Group {
   id: string;
   luminaires: string[];
+}
+
+export interface EffectOptions {
+  [key: string]: any;
+}
+
+export interface Effect {
+  id: string;
+  options: EffectOptions;
 }
