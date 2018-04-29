@@ -10,6 +10,7 @@ type Options = Scene[];
 interface State {
   app?: Koa;
   scenes: Scene[];
+  activeScene?: Scene;
 }
 
 const state: State = { scenes: [] };
@@ -21,6 +22,8 @@ const activateScene = (id: string) => {
   const scene = state.scenes.find(scene => scene.id === id);
 
   if (!scene) throw new Error(`Scene with id '${id}' not found`);
+
+  state.activeScene = scene;
 
   // TODO: get rid of janky type assertions
   const fieldsList = <LuminaireUpdateFields[]>flatten(
@@ -55,6 +58,16 @@ const activateScene = (id: string) => {
   );
 
   updateLuminaires(fieldsList);
+};
+
+export const cycleScenes = (scenes: string[]) => {
+  let currentIndex = 0;
+
+  if (state.activeScene && scenes.includes(state.activeScene.id)) {
+    currentIndex = scenes.indexOf(state.activeScene.id);
+  }
+
+  activateScene(scenes[(currentIndex + 1) % scenes.length]);
 };
 
 export const register = async (app: Koa, options: Options) => {
