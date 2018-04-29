@@ -1,6 +1,7 @@
 import { AnyState, StateType, HSVState, RGBState, CTState } from './types';
 
 import * as convert from 'color-convert';
+import { clamp } from 'ramda';
 
 export const convertTo = (orig: AnyState, to: StateType): AnyState => {
   let from: StateType = StateType.HSV;
@@ -60,6 +61,15 @@ export const calculateTransitionProgress = (
   return Math.max(0, Math.min(progress, 1));
 };
 
+export const transitionValues = (
+  oldValue: number,
+  newValue: number,
+  progress: number,
+): number => {
+  progress = clamp(progress, 0, 1);
+  return oldValue * (1 - progress) + newValue * progress;
+};
+
 export const getColorTransition = (
   oldColor: HSVState,
   newColor: HSVState,
@@ -78,11 +88,18 @@ export const getColorTransition = (
 
   // Perform the transition in RGB color space
   const curRgb: RGBState = {
-    r: oldRgb.r * (1 - progress) + newRgb.r * progress,
-    g: oldRgb.g * (1 - progress) + newRgb.g * progress,
-    b: oldRgb.b * (1 - progress) + newRgb.b * progress,
+    r: transitionValues(oldRgb.r, newRgb.r, progress),
+    g: transitionValues(oldRgb.g, newRgb.g, progress),
+    b: transitionValues(oldRgb.b, newRgb.b, progress),
   };
 
   // Convert RGB back to HSV then return result
   return <HSVState>convertTo(curRgb, StateType.HSV);
+};
+
+export const getMsSinceMidnight = (): number => {
+  const d = new Date();
+  const e = new Date(d);
+  e.setHours(0, 0, 0, 0);
+  return d.getTime() - e.getTime();
 };
