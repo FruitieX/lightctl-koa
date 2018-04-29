@@ -72,6 +72,20 @@ export const registerLuminaire = (
 export const luminaireExists = (id: string): boolean => !!state.luminaires[id];
 
 /**
+ * Resizes HSVState[] to target size
+ * TODO: use a proper resampling method, like:
+ * http://entropymine.com/imageworsener/resample/
+ */
+const resizeColors = (source: HSVState[], targetSize: number): HSVState[] => {
+  // Already correct size, do nothing
+  if (source.length === targetSize) return source;
+
+  return [...Array(targetSize)].map(
+    (_, i) => source[Math.floor(i / targetSize * source.length)],
+  );
+};
+
+/**
  * Recalculates current light source color values based on luminaire colors,
  * effects and eventual transition.
  */
@@ -95,28 +109,15 @@ export const recalcLightSources = (luminaire: Luminaire) => {
     new Date().getTime(),
   );
 
-  // Calculate current colors based on transition time
-  // FIXME this is broken because we CANNOT assume newColor.length ===
-  // oldColor.length!
-  const curColors = newColors.map((newColor, index) => {
-    const oldColor = oldColors[index];
+  const oldResized = resizeColors(oldColors, luminaire.lightSources.length);
+  const newResized = resizeColors(newColors, luminaire.lightSources.length);
+
+  // Calculate and set current colors based on transition time
+  luminaire.lightSources = newResized.map((newColor, index) => {
+    const oldColor = oldResized[index];
 
     // Calculate transition between oldColor and newColor
-    return getColorTransition(oldColor, newColor, progress);
-  });
-
-  // Spread colors evenly to luminaire's lightSources
-  // TODO: what if numCol > numLs?
-  const numLs = luminaire.lightSources.length;
-  const numCol = curColors.length;
-
-  luminaire.lightSources = luminaire.lightSources.map((lightSource, index) => {
-    const colIndex = index / (numLs - 1) * (numCol - 1);
-    const leftColor = curColors[Math.floor(colIndex)];
-    const rightColor = curColors[Math.ceil(colIndex)];
-
-    const q = colIndex - Math.floor(colIndex);
-    return { state: getColorTransition(leftColor, rightColor, q) };
+    return { state: getColorTransition(oldColor, newColor, progress) };
   });
 };
 

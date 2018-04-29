@@ -35,6 +35,7 @@
 
 import * as Koa from 'koa';
 import { registerLuminaire } from '../../core/luminaire';
+import { Luminaire } from '../../types';
 
 interface Options {
   luminaires: [
@@ -54,9 +55,13 @@ export const register = (app: Koa, options: Options) => {
   });
 
   // Log changes to console
-  app.on('luminaireUpdated', async luminaire => {
-    if (luminaire.gateway === 'dummy') {
-      console.log('luminaireUpdated', luminaire);
+  app.on('luminairesUpdated', async (luminaires: Luminaire[]) => {
+    const gwLuminaires = luminaires.filter(
+      luminaire => luminaire.gateway === 'dummy',
+    );
+
+    if (gwLuminaires.length) {
+      console.log('luminairesUpdated', gwLuminaires);
     }
   });
 };
