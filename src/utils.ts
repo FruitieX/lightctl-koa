@@ -8,15 +8,15 @@ export const convertTo = (orig: AnyState, to: StateType): AnyState => {
   let arr: [number, number, number] = [0, 0, 100];
 
   // TODO: this is janky af, but there's no better way right?
-  if ((<HSVState>orig).h) {
+  if (!isNaN((<HSVState>orig).h)) {
     const hsv = <HSVState>orig;
     from = StateType.HSV;
     arr = [hsv.h, hsv.s, hsv.v];
-  } else if ((<RGBState>orig).r) {
+  } else if (!isNaN((<RGBState>orig).r)) {
     const rgb = <RGBState>orig;
     from = StateType.RGB;
     arr = [rgb.r, rgb.g, rgb.b];
-  } else if ((<CTState>orig).c) {
+  } else if (!isNaN((<CTState>orig).c)) {
     const ct = <CTState>orig;
     from = StateType.CT;
     arr = [ct.c, ct.t, 0];
