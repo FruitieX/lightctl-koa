@@ -54,8 +54,8 @@ export const registerLuminaire = (
   numLightSources: number,
 ): Luminaire => {
   if (!state.app) throw new Error('Plugin not yet initialized');
-  if (state.luminaires[id])
-    throw new Error(`Luminaire already exists with id '${id}'`);
+  //if (state.luminaires[id])
+  //throw new Error(`Luminaire already exists with id '${id}'`);
 
   const luminaire = createLuminaire(id, gateway, numLightSources);
   state.luminaires[id] = luminaire;
