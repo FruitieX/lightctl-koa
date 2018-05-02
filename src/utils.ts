@@ -66,7 +66,7 @@ export const transitionValues = (
   newValue: number,
   progress: number,
 ): number => {
-  progress = clamp(progress, 0, 1);
+  progress = clamp(0, 1, progress);
   return oldValue * (1 - progress) + newValue * progress;
 };
 

@@ -35,8 +35,8 @@ export default (colors: HSVState[], options: EffectOptions): HSVState[] => {
     const rgb = <RGBState>convertTo(color, StateType.RGB);
 
     // http://www.tannerhelland.com/5675/simple-algorithms-adjusting-image-temperature-tint/
-    rgb.r = clamp(rgb.r + tempShift, 0, 255);
-    rgb.b = clamp(rgb.b - tempShift, 0, 255);
+    rgb.r = clamp(0, 255, rgb.r + tempShift);
+    rgb.b = clamp(0, 255, rgb.r - tempShift);
 
     return <HSVState>convertTo(rgb, StateType.HSV);
   });

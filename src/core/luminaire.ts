@@ -85,6 +85,8 @@ const resizeColors = (source: HSVState[], targetSize: number): HSVState[] => {
   );
 };
 
+const defaultColor: HSVState = { h: 0, s: 0, v: 0 };
+
 /**
  * Recalculates current light source color values based on luminaire colors,
  * effects and eventual transition.
@@ -113,8 +115,8 @@ export const recalcLightSources = (luminaire: Luminaire) => {
   const newResized = resizeColors(newColors, luminaire.lightSources.length);
 
   // Calculate and set current colors based on transition time
-  luminaire.lightSources = newResized.map((newColor, index) => {
-    const oldColor = oldResized[index];
+  luminaire.lightSources = newResized.map((newColor = defaultColor, index) => {
+    const oldColor = oldResized[index] || defaultColor;
 
     // Calculate transition between oldColor and newColor
     return { state: getColorTransition(oldColor, newColor, progress) };
