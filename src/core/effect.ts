@@ -8,11 +8,11 @@ export const applyEffectsAll = (
 ): HSVState[] => {
   return effects.reduce(
     (accumulatedColors: HSVState[], effect, effectIndex) => {
-      const effectFn = require(`../${effect.id}`);
+      const effectFn = require(`../plugins/effects/${effect.id}`).default;
 
       return effectFn(
         accumulatedColors,
-        effect.options,
+        effect.options || {},
         luminaireId,
         numLightSources,
         effectIndex,
