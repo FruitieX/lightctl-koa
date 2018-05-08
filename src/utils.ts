@@ -22,6 +22,10 @@ export const convertTo = (orig: AnyState, to: StateType): AnyState => {
     arr = [ct.c, ct.t, 0];
   }
 
+  if (from === to) {
+    return orig;
+  }
+
   // @ts-ignore
   const converted = convert[from][to].raw(arr);
 
