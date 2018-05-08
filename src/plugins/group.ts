@@ -28,6 +28,10 @@ export const getGroup = (id: string): Group => {
   return group;
 };
 
+export const getGroups = (): Group[] => {
+  return Object.values(state.groups);
+};
+
 /**
  * Returns true if group with given id exists, false otherwise.
  */
@@ -132,5 +136,7 @@ export const register = async (app: Koa, options: Options) => {
   options.forEach(group => (groups[group.id] = group));
   state.groups = groups;
 
-  //app.on('luminaireRegistered', onLuminaireRegistered);
+  app.on('updateLuminaireOrGroup', (fields: LuminaireUpdateFields) =>
+    updateLuminaireOrGroup(fields),
+  );
 };
