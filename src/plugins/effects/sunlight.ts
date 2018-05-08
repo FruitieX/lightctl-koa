@@ -25,8 +25,8 @@ const defaultTempAtHours = {
 export default (colors: HSVState[], options: EffectOptions): HSVState[] => {
   const tempAtHours = options.tempAtHours || defaultTempAtHours;
   const hour = getMsSinceMidnight() / 1000 / 60 / 60;
-  const prevTemp = options.tempAtHours[Math.floor(hour)] || 0;
-  const nextTemp = options.tempAtHours[Math.ceil(hour) % 24] || 0;
+  const prevTemp = tempAtHours[Math.floor(hour)] || 0;
+  const nextTemp = tempAtHours[Math.ceil(hour) % 24] || 0;
 
   const progress = hour - Math.floor(hour);
   const tempShift = transitionValues(prevTemp, nextTemp, progress);
