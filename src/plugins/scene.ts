@@ -61,6 +61,10 @@ const activateScene = (id: string) => {
   updateLuminaires(fieldsList);
 };
 
+export const getScenes = (): Scene[] => {
+  return Object.values(state.scenes);
+};
+
 export const cycleScenes = (scenes: string[]) => {
   let currentIndex = 0;
 
@@ -74,4 +78,9 @@ export const cycleScenes = (scenes: string[]) => {
 export const register = async (app: Koa, options: Options) => {
   state.app = app;
   state.scenes = options;
+
+  app.on('cycleScenes', ({ scenes }: { scenes: string[] }) =>
+    cycleScenes(scenes),
+  );
+  app.on('activateScene', ({ id }: { id: string }) => activateScene(id));
 };
