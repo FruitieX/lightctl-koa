@@ -9,5 +9,7 @@ export const defaultState: HSVState = {
 };
 
 export const createLightSource = (initState = defaultState): LightSource => ({
+  oldState: initState,
   state: initState,
+  newState: initState,
 });

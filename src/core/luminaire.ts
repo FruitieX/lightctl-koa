@@ -119,7 +119,11 @@ export const recalcLightSources = (luminaire: Luminaire) => {
     const oldColor = oldResized[index] || defaultColor;
 
     // Calculate transition between oldColor and newColor
-    return { state: getColorTransition(oldColor, newColor, progress) };
+    return {
+      oldState: oldColor,
+      state: getColorTransition(oldColor, newColor, progress),
+      newState: newColor,
+    };
   });
 };
 

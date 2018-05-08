@@ -25,7 +25,9 @@ export enum StateType {
 
 // A light source, such as an RGB LED.
 export interface LightSource {
+  oldState: HSVState;
   state: HSVState; // state when transition started
+  newState: HSVState;
   //transitionStart: number; // time when transition started
   //prevState: HSVState; // state when transition started
 
