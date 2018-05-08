@@ -158,8 +158,8 @@ const updateLuminaire = ({
   luminaire.transitionTime = transitionTime;
   luminaire.transitionStart = new Date().getTime();
 
-  luminaire.newColors = colors;
-  luminaire.newEffects = effects;
+  luminaire.newColors = colors || [];
+  luminaire.newEffects = effects || [];
 
   recalcLightSources(luminaire);
 
