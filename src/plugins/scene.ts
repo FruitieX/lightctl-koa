@@ -28,7 +28,8 @@ const activateScene = (id: string) => {
   // TODO: get rid of janky type assertions
   const fieldsList = <LuminaireUpdateFields[]>flatten(
     scene.targets.map(target => {
-      const brightness = target.brightness || 1;
+      const brightness =
+        target.brightness === undefined ? 1 : target.brightness;
 
       const colors = (target.colors || scene.colors)
         .map(color => <HSVState>convertTo(color, StateType.HSV))
