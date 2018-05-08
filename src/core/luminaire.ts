@@ -187,4 +187,14 @@ export const updateLuminaires = (
 
 export const register = async (app: Koa, options: Options) => {
   state.app = app;
+
+  app.on('updateLuminaire', (fields: LuminaireUpdateFields) =>
+    updateLuminaire(fields),
+  );
+
+  app.on(
+    'updateLuminaires',
+    ({ fieldsList }: { fieldsList: LuminaireUpdateFields[] }) =>
+      updateLuminaires(fieldsList),
+  );
 };
