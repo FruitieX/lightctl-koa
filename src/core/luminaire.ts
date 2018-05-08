@@ -179,7 +179,9 @@ export const updateLuminaires = (
 ): Luminaire[] => {
   if (!state.app) throw new Error('Plugin not yet initialized');
 
-  const luminaires = fieldsList.map(updateLuminaire);
+  const luminaires = fieldsList
+    .filter(fields => luminaireExists(fields.id))
+    .map(fields => updateLuminaire(fields));
 
   state.app.emit('luminairesUpdated', luminaires);
   return luminaires;
