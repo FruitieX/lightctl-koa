@@ -66,7 +66,7 @@ export const getScenes = (): Scene[] => {
 };
 
 export const cycleScenes = (scenes: string[]) => {
-  let currentIndex = 0;
+  let currentIndex = -1;
 
   if (state.activeScene && scenes.includes(state.activeScene.id)) {
     currentIndex = scenes.indexOf(state.activeScene.id);
