@@ -10,16 +10,21 @@
     "color-convert": "^1.9.1",
     "cosmiconfig": "^4.0.0",
     "koa": "^2.5.0",
+    "koa-bodyparser": "^4.2.0",
     "koa-router": "^7.4.0",
-    "ramda": "^0.25.0"
+    "ramda": "^0.25.0",
+    "request": "^2.85.0",
+    "request-promise-native": "^1.0.5"
   },
   "devDependencies": {
     "@types/color-convert": "^1.9.0",
     "@types/cosmiconfig": "^4.0.0",
     "@types/koa": "^2.0.45",
+    "@types/koa-bodyparser": "^4.2.0",
     "@types/koa-router": "^7.0.27",
     "@types/node": "^9.6.5",
     "@types/ramda": "^0.25.24",
+    "@types/request-promise-native": "^1.0.14",
     "nodemon": "^1.17.3",
     "ts-node": "^6.0.0",
     "typescript": "^2.8.1"
