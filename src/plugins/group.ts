@@ -5,6 +5,7 @@ import {
   luminaireExists,
   updateLuminaires,
 } from '../core/luminaire';
+import { resetActiveScene } from './scene';
 
 type Options = Group[];
 
@@ -47,6 +48,7 @@ export const updateLuminaireOrGroup = (
 ): Luminaire[] => {
   if (luminaireExists(fields.id)) {
     // A luminaire id match found, update only that luminaire
+    resetActiveScene();
     return updateLuminaires([fields]);
   } else if (groupExists(fields.id)) {
     // A group id match found, update all luminaires in group
@@ -56,6 +58,7 @@ export const updateLuminaireOrGroup = (
       id: luminaireId,
     }));
 
+    resetActiveScene();
     return updateLuminaires(fieldsList);
   } else {
     throw new Error(`No luminaire or group with id '${fields.id}' found.`);

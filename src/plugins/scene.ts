@@ -61,6 +61,10 @@ const activateScene = (id: string) => {
   updateLuminaires(fieldsList);
 };
 
+export const resetActiveScene = () => {
+  delete state.activeScene;
+};
+
 export const getScenes = (): Scene[] => {
   return Object.values(state.scenes);
 };
