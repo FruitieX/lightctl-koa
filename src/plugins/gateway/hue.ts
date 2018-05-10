@@ -195,8 +195,8 @@ const optimizeRequest = (request: Request): OptimizedRequest | null => {
       optimized.body.transitiontime = request.body.transitiontime;
   }
 
-  // These only matter if the bulb is on or about to be turned on
-  if (hueLight.state.on || optimized.body.on) {
+  // These only matter if the bulb is going to be on after this command
+  if ((hueLight.state.on || optimized.body.on) && optimized.body.on !== false) {
     if (absDiff(hueLight.state.hue, request.body.hue) >= 400)
       optimized.body.hue = request.body.hue;
 
