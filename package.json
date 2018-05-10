@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/server.ts"
+    "start": "nodemon --watch 'src/**/*' --watch lightctl.config.js -e ts,tsx --exec 'ts-node' ./src/server.ts"
   },
   "dependencies": {
     "color-convert": "^1.9.1",
