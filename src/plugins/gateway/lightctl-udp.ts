@@ -162,7 +162,7 @@ export const register = async (app: Koa, options: Options) => {
     );
 
     if (existingClient) {
-      console.log('got keepalive from', existingClient.id);
+      //console.log('got keepalive from', existingClient.id);
       setClientTimeout(existingClient);
       // TODO: re-register luminaire?
     } else {
@@ -176,7 +176,7 @@ export const register = async (app: Koa, options: Options) => {
         return console.log('numLights field must be provided.');
       }
 
-      console.log('lightctl-udp', json, 'registered.');
+      //console.log('lightctl-udp', json, 'registered.');
 
       const luminaire = registerLuminaire(id, 'lightctl-udp', numLights);
 
