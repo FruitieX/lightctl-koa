@@ -311,6 +311,12 @@ const pollLights = async () => {
 
         if (!hueLuminaire) continue;
 
+        if (
+          state.options.disableForceUpdate &&
+          state.options.disableForceUpdate.includes(hueLuminaire.luminaire.id)
+        )
+          continue;
+
         const luminaire = getLuminaire(hueLuminaire.luminaire.id);
         luminaires.push(luminaire);
       }
