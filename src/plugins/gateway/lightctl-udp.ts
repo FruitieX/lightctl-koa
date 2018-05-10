@@ -74,9 +74,9 @@ const send = (client: Client) => () => {
   luminaire.lightSources.forEach((source, index) => {
     const currentState = source.state;
 
-    array[index * 3 + 0] = Math.floor(currentState.h / 360 * 256); // hue
-    array[index * 3 + 1] = Math.floor(currentState.s / 100 * 256); // saturation
-    array[index * 3 + 2] = Math.floor(currentState.v / 100 * 256); // value
+    array[index * 3 + 0] = Math.floor(currentState.h / 360 * 255); // hue
+    array[index * 3 + 1] = Math.floor(currentState.s / 100 * 255); // saturation
+    array[index * 3 + 2] = Math.floor(currentState.v / 100 * 255); // value
 
     // const rgb = convert.hsv.rgb.raw(currentState);
     //
