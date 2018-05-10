@@ -10,15 +10,21 @@ import request = require('request-promise-native');
 import { getGroups } from '../group';
 import { forEachObjIndexed, intersection, reduce } from 'ramda';
 
+interface Event {
+  action: string;
+  payload: { [payloadProp: string]: any };
+}
+
 interface Sensor {
   id: string;
-  events: { [eventType: string]: any };
+  events: { [eventType: string]: Event[] };
 }
 
 interface Options {
   bridgeAddr: string;
   username: string;
   sensors: Sensor[];
+  disableForceUpdate?: string[];
 }
 
 interface BridgeLightstate {
@@ -359,14 +365,14 @@ const pollSensors = async () => {
           const events = sensorEvents[_state];
 
           if (events) {
-            forEachObjIndexed((payload: any, event: any) => {
+            events.forEach(event => {
               console.log(
-                `hue/switches: Invoking event ${event} with payload ${JSON.stringify(
-                  payload,
-                )}`,
+                `hue/switches: Invoking action ${
+                  event.action
+                } with payload ${JSON.stringify(event.payload)}`,
               );
-              state.app.emit(event, payload);
-            }, events);
+              state.app.emit(event.action, event.payload);
+            });
           }
         }
 
