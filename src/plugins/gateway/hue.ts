@@ -95,6 +95,15 @@ const luminaireIdToLightId = (luminaireId: string): string | undefined => {
   return undefined;
 };
 
+const lightByLuminaireId = (luminaireId: string): BridgeLight | undefined => {
+  for (const lightId in state.bridgeLights) {
+    const light = state.bridgeLights[lightId];
+    if (light.name === luminaireId) return light;
+  }
+
+  return undefined;
+};
+
 const req = async (path: string, method = 'get', body?: object) => {
   return await request({
     url: `http://${state.options.bridgeAddr}/api/${
@@ -136,15 +145,88 @@ const createGroups = async (groups: Group[]) => {
   }
 };
 
+interface Request {
+  id: string;
+  body: {
+    on: boolean;
+    hue: number;
+    sat: number;
+    bri: number;
+    transitiontime: number;
+  };
+}
+
+interface OptimizedRequest {
+  id: string;
+  body: {
+    on?: boolean;
+    hue?: number;
+    sat?: number;
+    bri?: number;
+    transitiontime?: number;
+  };
+}
+
+const absDiff = (a: number, b: number) => Math.abs(a - b);
+
+const optimizeRequest = (request: Request): OptimizedRequest | null => {
+  // Current light state as per the Hue bridge
+  const hueLight = lightByLuminaireId(request.id);
+
+  const optimized: OptimizedRequest = {
+    id: request.id,
+    body: {},
+  };
+
+  if (!hueLight)
+    throw new Error(`Hue light not found for luminaire ${request.id}`);
+
+  if (hueLight.state.on !== request.body.on)
+    optimized.body.on = request.body.on;
+
+  // Transitiontime only matters if:
+  // 1. light is currently on
+  // 2. we are toggling on state
+  if (hueLight.state.on || optimized.body.on !== undefined) {
+    // 400 ms (or 4 hundredths of a second) is the default transition time in Hue,
+    // and 500 ms is the default in lightctl (which is close enough for an
+    // optimization). Don't bother sending either.
+    if (request.body.transitiontime !== 4 && request.body.transitiontime !== 5)
+      optimized.body.transitiontime = request.body.transitiontime;
+  }
+
+  // These only matter if the bulb is on or about to be turned on
+  if (hueLight.state.on || optimized.body.on) {
+    if (absDiff(hueLight.state.hue, request.body.hue) >= 400)
+      optimized.body.hue = request.body.hue;
+
+    if (absDiff(hueLight.state.sat, request.body.sat) >= 4)
+      optimized.body.sat = request.body.sat;
+
+    if (absDiff(hueLight.state.bri, request.body.bri) >= 4)
+      optimized.body.bri = request.body.bri;
+  }
+
+  // Request is a no-op
+  if (
+    optimized.body.on === undefined &&
+    optimized.body.hue === undefined &&
+    optimized.body.sat === undefined &&
+    optimized.body.bri === undefined
+  )
+    return null;
+
+  return optimized;
+};
+
 const luminairesUpdated = async (
   luminaires: Luminaire[],
   transitionTime = 500,
 ) => {
   // Requests array contains Hue API requests to be made, one for each luminaire
-  const luminaireRequests = luminaires.map(luminaire => {
+  const luminaireRequests: Request[] = luminaires.map(luminaire => {
     const state = luminaire.lightSources[0].newState;
 
-    // Hue uses hundredths of a second as transitiontime unit
     const hueTransitionTime = Math.round(transitionTime / 100);
 
     return {
@@ -160,11 +242,8 @@ const luminairesUpdated = async (
         // (but seems to accept 0 just fine)
         bri: Math.round(state.v / 100 * 254),
 
-        // 400 ms (or 4 hundredths of a second) is the default transition time in Hue, and 500 ms is the default in lightctl (which is close enough for an optimization). Don't bother sending either.
-        transitiontime:
-          hueTransitionTime === 4 || hueTransitionTime === 5
-            ? undefined
-            : hueTransitionTime,
+        // Hue uses hundredths of a second as transitiontime unit
+        transitiontime: Math.round(transitionTime / 100),
       },
     };
   });
@@ -196,7 +275,11 @@ const luminairesUpdated = async (
   });
   */
 
-  for (let luminaireRequest of luminaireRequests) {
+  const optimizedRequests = luminaireRequests.map(optimizeRequest);
+
+  for (let luminaireRequest of optimizedRequests) {
+    if (!luminaireRequest) continue;
+
     const lightId = luminaireIdToLightId(luminaireRequest.id);
     if (lightId) {
       console.log(
