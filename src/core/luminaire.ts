@@ -63,6 +63,8 @@ export const registerLuminaire = (
   // TODO: this is not a deep copy
   const copy = { ...luminaire };
   state.app.emit('luminaireRegistered', copy);
+
+  console.log('Luminaire', id, 'registered.');
   return copy;
 };
 
@@ -193,10 +195,6 @@ export const updateLuminaires = (
 
 export const register = async (app: Koa, options: Options) => {
   state.app = app;
-
-  app.on('updateLuminaire', (fields: LuminaireUpdateFields) =>
-    updateLuminaire(fields),
-  );
 
   app.on(
     'updateLuminaires',
