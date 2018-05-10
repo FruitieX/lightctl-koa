@@ -4,7 +4,7 @@
 
 import * as Koa from 'koa';
 import * as R from 'ramda';
-import { registerLuminaire } from '../../core/luminaire';
+import { registerLuminaire, getLuminaire } from '../../core/luminaire';
 import { Luminaire, Group } from '../../types';
 import request = require('request-promise-native');
 import { getGroups } from '../group';
@@ -54,11 +54,18 @@ type BridgeGroups = { [groupIndex: string]: BridgeGroup };
 type BridgeSensors = any;
 type BridgeRules = any;
 
+interface HueLuminaire {
+  luminaire: Luminaire;
+  light: BridgeLight;
+  lightId: string;
+}
+
 interface State {
   bridgeLights: BridgeLights;
   bridgeGroups: BridgeGroups;
   bridgeSensors: BridgeSensors;
   bridgeRules: BridgeRules;
+  hueLuminaires: HueLuminaire[];
   switchSensorId: string;
   app: Koa;
   options: Options;
@@ -69,6 +76,7 @@ const state: State = {
   bridgeGroups: {},
   bridgeSensors: {},
   bridgeRules: {},
+  hueLuminaires: [],
   switchSensorId: '',
   app: new Koa(),
   options: {
@@ -128,10 +136,16 @@ const createGroups = async (groups: Group[]) => {
   }
 };
 
-const luminairesUpdated = async (luminaires: Luminaire[]) => {
+const luminairesUpdated = async (
+  luminaires: Luminaire[],
+  transitionTime = 500,
+) => {
   // Requests array contains Hue API requests to be made, one for each luminaire
   const luminaireRequests = luminaires.map(luminaire => {
     const state = luminaire.lightSources[0].newState;
+
+    // Hue uses hundredths of a second as transitiontime unit
+    const hueTransitionTime = Math.round(transitionTime / 100);
 
     return {
       id: luminaire.id,
@@ -145,6 +159,12 @@ const luminairesUpdated = async (luminaires: Luminaire[]) => {
         // Our v value is in [0, 100], Hue uses [1, 254]
         // (but seems to accept 0 just fine)
         bri: Math.round(state.v / 100 * 254),
+
+        // 400 ms (or 4 hundredths of a second) is the default transition time in Hue, and 500 ms is the default in lightctl (which is close enough for an optimization). Don't bother sending either.
+        transitiontime:
+          hueTransitionTime === 4 || hueTransitionTime === 5
+            ? undefined
+            : hueTransitionTime,
       },
     };
   });
@@ -195,11 +215,29 @@ const delay = (ms: number) =>
 
 const pollLights = async () => {
   while (true) {
-    const newBridgeLights = <BridgeLights>await req('lights');
+    try {
+      const curBridgeLights = <BridgeLights>await req('lights');
+      state.bridgeLights = curBridgeLights;
 
-    // Diff them to state.bridgeLights
+      // Get most recent luminaire state for each bridge light
+      const luminaires: Luminaire[] = [];
+      for (const lightId in curBridgeLights) {
+        const hueLuminaire = state.hueLuminaires.find(
+          hueLuminaire => hueLuminaire.lightId === lightId,
+        );
 
-    await delay(1000);
+        if (!hueLuminaire) continue;
+
+        const luminaire = getLuminaire(hueLuminaire.luminaire.id);
+        luminaires.push(luminaire);
+      }
+
+      await luminairesUpdated(luminaires, 1000);
+
+      await delay(1000);
+    } catch (e) {
+      console.error(e);
+    }
   }
 };
 
@@ -351,6 +389,10 @@ const initSensors = async () => {
   }
 };
 
+const filterHueLuminaires = (luminaires: Luminaire[]): Luminaire[] => {
+  return luminaires.filter(luminaire => luminaire.gateway === 'hue');
+};
+
 export const register = async (app: Koa, options: Options) => {
   state.options = options;
   state.app = app;
@@ -365,8 +407,9 @@ export const register = async (app: Koa, options: Options) => {
     //const bridgeScenes = <BridgeScenes>await req('scenes', options);
 
     // Register hue lights as luminaires
-    forEachObjIndexed(light => {
-      registerLuminaire(light.name, 'hue', 1);
+    forEachObjIndexed((light, lightId) => {
+      const luminaire = registerLuminaire(light.name, 'hue', 1);
+      state.hueLuminaires.push({ luminaire, light, lightId });
     }, state.bridgeLights);
 
     // Delete all existing groups
@@ -405,10 +448,7 @@ export const register = async (app: Koa, options: Options) => {
   });
 
   app.on('luminairesUpdated', async (luminaires: Luminaire[]) => {
-    const gwLuminaires = luminaires.filter(
-      luminaire => luminaire.gateway === 'hue',
-    );
-
+    const gwLuminaires = filterHueLuminaires(luminaires);
     if (gwLuminaires.length) {
       luminairesUpdated(gwLuminaires);
     }
