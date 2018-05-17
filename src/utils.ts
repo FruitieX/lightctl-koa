@@ -1,7 +1,8 @@
 import { AnyState, StateType, HSVState, RGBState, CTState } from './types';
 
-import * as convert from 'color-convert';
+import * as cc from 'color-convert';
 import { clamp } from 'ramda';
+import { convert } from 'chromatism';
 
 export const convertTo = (orig: AnyState, to: StateType): AnyState => {
   let from: StateType = StateType.HSV;
@@ -27,7 +28,7 @@ export const convertTo = (orig: AnyState, to: StateType): AnyState => {
   }
 
   // @ts-ignore
-  const converted = convert[from][to].raw(arr);
+  const converted = cc[from][to].raw(arr);
 
   if (to === StateType.HSV) {
     return <HSVState>{
@@ -86,6 +87,20 @@ export const getColorTransition = (
     return newColor;
   }
 
+  // Do transition in CIELAB color space
+
+  const oldLab = convert(oldColor).cielab;
+  const newLab = convert(newColor).cielab;
+
+  const curLab = {
+    L: transitionValues(oldLab.L, newLab.L, progress),
+    a: transitionValues(oldLab.a, newLab.a, progress),
+    b: transitionValues(oldLab.b, newLab.b, progress),
+  };
+
+  return convert(curLab).hsv;
+
+  /*
   // Convert HSV to RGB as HSV is unsuitable for transitions
   const oldRgb = <RGBState>convertTo(oldColor, StateType.RGB);
   const newRgb = <RGBState>convertTo(newColor, StateType.RGB);
@@ -99,6 +114,7 @@ export const getColorTransition = (
 
   // Convert RGB back to HSV then return result
   return <HSVState>convertTo(curRgb, StateType.HSV);
+  */
 };
 
 export const getMsSinceMidnight = (): number => {
