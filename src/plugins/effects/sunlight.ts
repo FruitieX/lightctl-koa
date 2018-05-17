@@ -1,7 +1,7 @@
 import { HSVState, EffectOptions, RGBState, StateType } from '../../types';
 import { convertTo, getMsSinceMidnight, transitionValues } from '../../utils';
 import { clamp } from 'ramda';
-import { convert } from 'chromatism';
+import { convert } from 'chromatism2';
 
 const night = 80;
 const defaultTempAtHours = {

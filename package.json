@@ -7,7 +7,7 @@
     "start": "nodemon --watch 'src/**/*' --watch lightctl.config.js -e ts,tsx --exec 'ts-node' ./src/server.ts"
   },
   "dependencies": {
-    "chromatism": "^3.0.0",
+    "chromatism2": "^3.0.2",
     "color-convert": "^1.9.1",
     "cosmiconfig": "^4.0.0",
     "koa": "^2.5.0",

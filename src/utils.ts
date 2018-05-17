@@ -2,7 +2,7 @@ import { AnyState, StateType, HSVState, RGBState, CTState } from './types';
 
 import * as cc from 'color-convert';
 import { clamp } from 'ramda';
-import { convert } from 'chromatism';
+import { convert } from 'chromatism2';
 
 export const convertTo = (orig: AnyState, to: StateType): AnyState => {
   let from: StateType = StateType.HSV;
