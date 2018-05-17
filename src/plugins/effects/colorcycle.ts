@@ -14,7 +14,8 @@ export default (
   const interval = options.interval || 3; // how frequently (seconds) a color moves from light to next
 
   return colors.map((_, index) => {
-    const offset = (t / 1000 / interval + index) % colors.length;
+    const offset =
+      (t / 1000 / interval + luminaireIndex + index) % colors.length;
 
     const leftColor = colors[Math.floor(offset)];
     const rightColor = colors[Math.ceil(offset) % colors.length];
