@@ -3,7 +3,8 @@ import { convertTo, getMsSinceMidnight, transitionValues } from '../../utils';
 import { clamp } from 'ramda';
 import { convert } from 'chromatism2';
 
-const night = 80;
+const night = 60;
+const day = -5;
 const defaultTempAtHours = {
   0: night,
   1: night,
@@ -12,14 +13,22 @@ const defaultTempAtHours = {
   4: night,
   5: night,
   6: night,
-  7: night,
-  8: 60,
-  9: 40,
-  10: 20,
-  /* missing values default to no temperature adjustment */
-  19: 20,
-  20: 40,
-  21: 60,
+  7: 40,
+  8: 20,
+  9: 10,
+  10: 0,
+  11: day,
+  12: day,
+  13: day,
+  14: day,
+  15: day,
+  16: day,
+  17: day,
+  18: 0,
+  19: 15,
+  20: 30,
+  21: 40,
+  22: 50,
   23: night,
 };
 
