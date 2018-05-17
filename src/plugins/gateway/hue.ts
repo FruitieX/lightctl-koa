@@ -24,7 +24,9 @@ interface Options {
   bridgeAddr: string;
   username: string;
   sensors: Sensor[];
-  disableForceUpdate?: string[];
+  customPollLogic?: {
+    [luminaireId: string]: Function;
+  };
 }
 
 interface BridgeLightstate {
@@ -318,13 +320,17 @@ const pollLights = async () => {
         if (!hueLuminaire) continue;
 
         if (
-          state.options.disableForceUpdate &&
-          state.options.disableForceUpdate.includes(hueLuminaire.luminaire.id)
-        )
-          continue;
+          state.options.customPollLogic &&
+          state.options.customPollLogic[hueLuminaire.luminaire.id]
+        ) {
+          const pollFun =
+            state.options.customPollLogic[hueLuminaire.luminaire.id];
 
-        const luminaire = getLuminaire(hueLuminaire.luminaire.id);
-        luminaires.push(luminaire);
+          pollFun(curBridgeLights[lightId]);
+        } else {
+          const luminaire = getLuminaire(hueLuminaire.luminaire.id);
+          luminaires.push(luminaire);
+        }
       }
 
       await luminairesUpdated(luminaires, 1000);
