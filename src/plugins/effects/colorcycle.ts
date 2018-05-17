@@ -4,6 +4,7 @@ import { getColorTransition } from '../../utils';
 export default (
   colors: HSVState[],
   options: EffectOptions,
+  luminaireIndex: number,
   luminaireId: string,
   numLightSources: number,
   effectIndex: number,

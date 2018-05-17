@@ -11,6 +11,7 @@ const state: State = {
 export default (
   colors: HSVState[],
   options: EffectOptions,
+  luminaireIndex: number,
   luminaireId: string,
   numLightSources: number,
   effectIndex: number,

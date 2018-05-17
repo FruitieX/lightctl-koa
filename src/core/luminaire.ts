@@ -13,13 +13,19 @@ interface Options {}
 
 interface State {
   app?: Koa;
-  luminaires: {
-    [id: string]: Luminaire;
-  };
+  luminaires: Luminaire[];
 }
 
 const state: State = {
-  luminaires: {},
+  luminaires: [],
+};
+
+const findLuminaire = (id: string): Luminaire | undefined => {
+  return state.luminaires.find(luminaire => luminaire.id === id);
+};
+
+export const findLuminaireIndex = (id: string): number => {
+  return state.luminaires.findIndex(luminaire => luminaire.id === id);
 };
 
 /**
@@ -54,11 +60,19 @@ export const registerLuminaire = (
   numLightSources: number,
 ): Luminaire => {
   if (!state.app) throw new Error('Plugin not yet initialized');
-  //if (state.luminaires[id])
-  //throw new Error(`Luminaire already exists with id '${id}'`);
+
+  const existingIndex = findLuminaireIndex(id);
+  if (existingIndex !== -1)
+    console.log(`Luminaire already exists with id '${id}', replacing...`);
+  // throw new Error(`Luminaire already exists with id '${id}'`);
 
   const luminaire = createLuminaire(id, gateway, numLightSources);
-  state.luminaires[id] = luminaire;
+
+  if (existingIndex !== -1) {
+    state.luminaires[existingIndex] = luminaire;
+  } else {
+    state.luminaires.push(luminaire);
+  }
 
   // TODO: this is not a deep copy
   const copy = { ...luminaire };
@@ -71,7 +85,7 @@ export const registerLuminaire = (
 /**
  * Returns true if luminaire with given id exists, false otherwise.
  */
-export const luminaireExists = (id: string): boolean => !!state.luminaires[id];
+export const luminaireExists = (id: string): boolean => !!findLuminaire(id);
 
 /**
  * Resizes HSVState[] to target size
@@ -133,7 +147,7 @@ export const recalcLightSources = (luminaire: Luminaire) => {
  * Finds and returns luminaire by id. Throws error if luminaire not found.
  */
 export const getLuminaire = (id: string): Luminaire => {
-  const luminaire = state.luminaires[id];
+  const luminaire = findLuminaire(id);
   if (!luminaire) throw new Error(`Luminaire with id '${id}' not found`);
 
   recalcLightSources(luminaire);
@@ -155,7 +169,7 @@ const updateLuminaire = ({
 }: LuminaireUpdateFields): Luminaire => {
   if (!state.app) throw new Error('Plugin not yet initialized');
 
-  const luminaire = state.luminaires[id];
+  const luminaire = findLuminaire(id);
   if (!luminaire) throw new Error(`Luminaire with id '${id}' not found`);
 
   luminaire.oldColors = luminaire.newColors;
