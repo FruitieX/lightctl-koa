@@ -1,5 +1,10 @@
+import * as Koa from 'koa';
 import { HSVState, Effect } from '../types';
 import { findLuminaireIndex } from './luminaire';
+import {
+  adjustBrightnessOffset,
+  setBrightnessOffset,
+} from '../plugins/effects/brightness';
 
 export const applyEffectsAll = (
   effects: Effect[],
@@ -25,4 +30,11 @@ export const applyEffectsAll = (
     },
     colors,
   );
+};
+
+export const register = async (app: Koa) => {
+  app.on('adjustBrightnessOffset', ({ delta }) =>
+    adjustBrightnessOffset(delta),
+  );
+  app.on('setBrightnessOffset', ({ offset }) => setBrightnessOffset(offset));
 };

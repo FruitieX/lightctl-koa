@@ -6,6 +6,7 @@ const init = async () => {
 
   // Register core plugins
   require('./core/luminaire').register(app);
+  require('./core/effect').register(app);
 
   // Register extra plugins
   for (const path in config) {
