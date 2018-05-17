@@ -35,9 +35,14 @@ export default (colors: HSVState[], options: EffectOptions): HSVState[] => {
   return colors.map(color => {
     const lab = convert(color).cielab;
 
+    // Set lightness to 50 for all lights, otherwise lights
+    // get colored by different amounts depending on HSV.v
+    // FIXME: this is not exactly correct and will mess up
+    // some colors
+    lab.L = 50;
     lab.a += tempShift;
     lab.b += tempShift;
 
-    return convert(color).hsv;
+    return { ...convert(lab).hsv, v: color.v };
   });
 };
