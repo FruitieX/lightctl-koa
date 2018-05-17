@@ -43,10 +43,10 @@ const createLuminaire = (
     createLightSource(initState && initState[i]),
   ),
 
-  oldColors: [],
+  oldColors: [...(initState || [])],
   oldEffects: [],
 
-  newColors: [],
+  newColors: [...(initState || [])],
   newEffects: [],
 
   transitionTime: 0,
