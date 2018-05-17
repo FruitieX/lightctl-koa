@@ -10,7 +10,7 @@ export default (
   numEffects: number,
 ): HSVState[] => {
   const t = new Date().getTime();
-  const rate = 0.5; // how frequently (seconds) a color moves from light to next
+  const rate = options.rate || 3; // how frequently (seconds) a color moves from light to next
 
   return colors.map((_, index) => {
     const offset = (t / 1000 * rate) % colors.length;
