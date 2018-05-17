@@ -307,6 +307,7 @@ const delay = (ms: number) =>
 const pollLights = async () => {
   while (true) {
     try {
+      const oldBridgeLights = state.bridgeLights;
       const curBridgeLights = <BridgeLights>await req('lights');
       state.bridgeLights = curBridgeLights;
 
@@ -326,7 +327,7 @@ const pollLights = async () => {
           const pollFun =
             state.options.customPollLogic[hueLuminaire.luminaire.id];
 
-          pollFun(curBridgeLights[lightId]);
+          pollFun(curBridgeLights[lightId], oldBridgeLights[lightId]);
         } else {
           const luminaire = getLuminaire(hueLuminaire.luminaire.id);
           luminaires.push(luminaire);
