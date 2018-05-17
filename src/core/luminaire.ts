@@ -108,23 +108,30 @@ const defaultColor: HSVState = { h: 0, s: 0, v: 0 };
  * effects and eventual transition.
  */
 export const recalcLightSources = (luminaire: Luminaire) => {
-  const oldColors = applyEffectsAll(
-    luminaire.oldEffects,
-    luminaire.oldColors,
-    luminaire.id,
-    luminaire.lightSources.length,
-  );
-  const newColors = applyEffectsAll(
-    luminaire.newEffects,
-    luminaire.newColors,
-    luminaire.id,
-    luminaire.lightSources.length,
-  );
-
   const progress = calculateTransitionProgress(
     luminaire.transitionStart,
     luminaire.transitionTime,
     new Date().getTime(),
+  );
+
+  let oldColors = [defaultColor];
+  let newColors = [defaultColor];
+
+  // Only calculate old colors if transition still ongoing
+  if (progress !== 1) {
+    oldColors = applyEffectsAll(
+      luminaire.oldEffects,
+      luminaire.oldColors,
+      luminaire.id,
+      luminaire.lightSources.length,
+    );
+  }
+
+  newColors = applyEffectsAll(
+    luminaire.newEffects,
+    luminaire.newColors,
+    luminaire.id,
+    luminaire.lightSources.length,
   );
 
   const oldResized = resizeColors(oldColors, luminaire.lightSources.length);
