@@ -1,8 +1,9 @@
 import { HSVState, EffectOptions, RGBState, StateType } from '../../types';
 import { convertTo, getMsSinceMidnight, transitionValues } from '../../utils';
 import { clamp } from 'ramda';
+import { convert } from 'chromatism';
 
-const night = 20;
+const night = 80;
 const defaultTempAtHours = {
   0: night,
   1: night,
@@ -12,13 +13,13 @@ const defaultTempAtHours = {
   5: night,
   6: night,
   7: night,
-  8: 15,
-  9: 10,
-  10: 5,
+  8: 60,
+  9: 40,
+  10: 20,
   /* missing values default to no temperature adjustment */
-  19: 5,
-  20: 10,
-  21: 15,
+  19: 20,
+  20: 40,
+  21: 60,
   23: night,
 };
 
@@ -32,12 +33,11 @@ export default (colors: HSVState[], options: EffectOptions): HSVState[] => {
   const tempShift = transitionValues(prevTemp, nextTemp, progress);
 
   return colors.map(color => {
-    const rgb = <RGBState>convertTo(color, StateType.RGB);
+    const lab = convert(color).cielab;
 
-    // http://www.tannerhelland.com/5675/simple-algorithms-adjusting-image-temperature-tint/
-    rgb.r = clamp(0, 255, rgb.r + tempShift);
-    rgb.b = clamp(0, 255, rgb.r - tempShift);
+    lab.a += tempShift;
+    lab.b += tempShift;
 
-    return <HSVState>convertTo(rgb, StateType.HSV);
+    return convert(color).hsv;
   });
 };
