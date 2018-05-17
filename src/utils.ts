@@ -4,6 +4,7 @@ import * as cc from 'color-convert';
 import { clamp } from 'ramda';
 import { convert } from 'chromatism2';
 
+// TODO: deprecate this in favor of chromatism
 export const convertTo = (orig: AnyState, to: StateType): AnyState => {
   let from: StateType = StateType.HSV;
   let arr: [number, number, number] = [0, 0, 100];
@@ -88,6 +89,7 @@ export const getColorTransition = (
   }
 
   // Do transition in CIELAB color space
+  // https://howaboutanorange.com/blog/2011/08/10/color_interpolation/
 
   const oldLab = convert(oldColor).cielab;
   const newLab = convert(newColor).cielab;

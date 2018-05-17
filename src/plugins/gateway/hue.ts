@@ -503,7 +503,13 @@ export const register = async (app: Koa, options: Options) => {
 
     // Register hue lights as luminaires
     forEachObjIndexed((light, lightId) => {
-      const luminaire = registerLuminaire(light.name, 'hue', 1);
+      const luminaire = registerLuminaire(light.name, 'hue', 1, [
+        {
+          h: light.state.hue / 65536 * 360,
+          s: light.state.sat / 254 * 100,
+          v: light.state.bri / 254 * 100,
+        },
+      ]);
       state.hueLuminaires.push({ luminaire, light, lightId });
     }, state.bridgeLights);
 

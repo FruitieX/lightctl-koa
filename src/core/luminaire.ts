@@ -35,10 +35,13 @@ const createLuminaire = (
   id: string,
   gateway: string,
   numLightSources: number,
+  initState?: HSVState[],
 ): Luminaire => ({
   id,
   gateway,
-  lightSources: [...Array(numLightSources)].map(createLightSource),
+  lightSources: [...Array(numLightSources)].map((_, i) =>
+    createLightSource(initState && initState[i]),
+  ),
 
   oldColors: [],
   oldEffects: [],
@@ -58,6 +61,7 @@ export const registerLuminaire = (
   id: string,
   gateway: string,
   numLightSources: number,
+  initState?: HSVState[],
 ): Luminaire => {
   if (!state.app) throw new Error('Plugin not yet initialized');
 
@@ -66,7 +70,7 @@ export const registerLuminaire = (
     console.log(`Luminaire already exists with id '${id}', replacing...`);
   // throw new Error(`Luminaire already exists with id '${id}'`);
 
-  const luminaire = createLuminaire(id, gateway, numLightSources);
+  const luminaire = createLuminaire(id, gateway, numLightSources, initState);
 
   if (existingIndex !== -1) {
     state.luminaires[existingIndex] = luminaire;
