@@ -2,7 +2,7 @@ import { HSVState, EffectOptions, RGBState, StateType } from '../../types';
 import { convertTo, getMsSinceMidnight, transitionValues } from '../../utils';
 import { clamp } from 'ramda';
 
-const night = 0.5;
+const night = 0.7;
 const defaultBriAtHours = {
   0: night,
   1: night,
@@ -11,15 +11,11 @@ const defaultBriAtHours = {
   4: night,
   5: night,
   6: night,
-  7: 0.6,
-  8: 0.7,
-  9: 0.8,
-  10: 0.9,
+  7: 0.8,
+  8: 0.9,
   /* missing values default to full brightness */
-  20: 0.9,
-  21: 0.8,
-  22: 0.7,
-  23: 0.6,
+  22: 0.9,
+  23: 0.8,
 };
 
 const state = {
