@@ -9,6 +9,7 @@ import { Luminaire, Group } from '../../types';
 import request = require('request-promise-native');
 import { getGroups } from '../group';
 import { forEachObjIndexed, intersection, reduce } from 'ramda';
+import { convert } from 'chromatism2';
 
 interface Event {
   action: string;
@@ -233,7 +234,7 @@ const luminairesUpdated = async (
 ) => {
   // Requests array contains Hue API requests to be made, one for each luminaire
   const luminaireRequests: Request[] = luminaires.map(luminaire => {
-    const state = luminaire.lightSources[0].newState;
+    const state = convert(luminaire.lightSources[0].newState).hsv;
 
     const hueTransitionTime = Math.round(transitionTime / 100);
 
