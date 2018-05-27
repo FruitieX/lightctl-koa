@@ -1,7 +1,7 @@
 import * as Koa from 'koa';
-import { Scene, LuminaireUpdateFields, StateType, HSVState } from '../types';
+import { ColourModes, convert } from 'chromatism2';
+import { Scene, LuminaireUpdateFields } from '../types';
 import { updateLuminaires } from '../core/luminaire';
-import { convertTo } from '../utils';
 import { groupExists, getGroup } from './group';
 import { flatten } from 'ramda';
 
@@ -32,7 +32,7 @@ export const activateScene = (id: string) => {
         target.brightness === undefined ? 1 : target.brightness;
 
       const colors = (target.colors || scene.colors)
-        .map(color => <HSVState>convertTo(color, StateType.HSV))
+        .map(color => convert(color).hsv)
         .map(color => ({ ...color, v: color.v * brightness }));
 
       const effects = target.effects || scene.effects;

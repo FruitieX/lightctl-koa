@@ -1,5 +1,6 @@
 import * as Koa from 'koa';
-import { HSVState, Effect } from '../types';
+import { ColourModes } from 'chromatism2';
+import { Effect } from '../types';
 import { findLuminaireIndex } from './luminaire';
 import {
   adjustBrightnessOffset,
@@ -8,12 +9,12 @@ import {
 
 export const applyEffectsAll = (
   effects: Effect[],
-  colors: HSVState[],
+  colors: ColourModes.Any[],
   luminaireId: string,
   numLightSources: number,
-): HSVState[] => {
+): ColourModes.Any[] => {
   return effects.reduce(
-    (accumulatedColors: HSVState[], effect, effectIndex) => {
+    (accumulatedColors: ColourModes.Any[], effect, effectIndex) => {
       const effectFn = require(`../plugins/effects/${effect.id}`).default;
 
       const luminaireIndex = findLuminaireIndex(luminaireId);

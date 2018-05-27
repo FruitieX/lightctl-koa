@@ -1,15 +1,16 @@
-import { HSVState, EffectOptions } from '../../types';
+import { ColourModes } from 'chromatism2';
+import { EffectOptions } from '../../types';
 import { getColorTransition } from '../../utils';
 
 export default (
-  colors: HSVState[],
+  colors: ColourModes.Any[],
   options: EffectOptions,
   luminaireIndex: number,
   luminaireId: string,
   numLightSources: number,
   effectIndex: number,
   numEffects: number,
-): HSVState[] => {
+): ColourModes.Any[] => {
   // Array already at correct length, do nothing
   if (colors.length === numLightSources) return colors;
 

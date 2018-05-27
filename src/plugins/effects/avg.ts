@@ -1,13 +1,10 @@
-import { HSVState, StateType, RGBState } from '../../types';
-import { convertTo } from '../../utils';
+import { ColourModes, convert } from 'chromatism2';
 
-export default (colors: HSVState[]): HSVState[] => {
-  const rgbColors = <RGBState[]>colors.map(color =>
-    convertTo(color, StateType.RGB),
-  );
+export default (colors: ColourModes.Any[]): ColourModes.Any[] => {
+  const rgbColors = colors.map(color => convert(color).rgb);
 
   const color = rgbColors.reduce((prev, cur) => {
-    return <RGBState>{
+    return {
       r: prev.r + cur.r,
       g: prev.g + cur.g,
       b: prev.b + cur.b,
@@ -18,5 +15,5 @@ export default (colors: HSVState[]): HSVState[] => {
   color.g /= rgbColors.length;
   color.b /= rgbColors.length;
 
-  return [<HSVState>convertTo(color, StateType.HSV)];
+  return [color];
 };

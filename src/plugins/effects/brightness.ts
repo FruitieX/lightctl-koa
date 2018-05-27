@@ -1,6 +1,7 @@
-import { HSVState, EffectOptions, RGBState, StateType } from '../../types';
-import { convertTo, getMsSinceMidnight, transitionValues } from '../../utils';
+import { ColourModes, convert } from 'chromatism2';
 import { clamp } from 'ramda';
+import { EffectOptions } from '../../types';
+import { getMsSinceMidnight, transitionValues } from '../../utils';
 
 const night = 0.7;
 const defaultBriAtHours = {
@@ -52,7 +53,10 @@ export const setBrightnessOffset = (offset: number) => {
   state.offset = offset;
 };
 
-export default (colors: HSVState[], options: EffectOptions): HSVState[] => {
+export default (
+  colors: ColourModes.Any[],
+  options: EffectOptions,
+): ColourModes.Any[] => {
   const briAtHours = options.briAtHours || defaultBriAtHours;
   const hour = getMsSinceMidnight() / 1000 / 60 / 60;
   const prevBri = briAtHours[Math.floor(hour)] || 1;
@@ -61,8 +65,12 @@ export default (colors: HSVState[], options: EffectOptions): HSVState[] => {
   const progress = hour - Math.floor(hour);
   const briShift = transitionValues(prevBri, nextBri, progress);
 
-  return colors.map(color => ({
-    ...color,
-    v: clamp(0, 100, color.v * briShift + state.offset),
-  }));
+  return colors.map(color => {
+    color = convert(color).hsv;
+
+    return {
+      ...color,
+      v: clamp(0, 100, color.v * briShift + state.offset),
+    };
+  });
 };

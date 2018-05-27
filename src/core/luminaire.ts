@@ -1,9 +1,5 @@
-import {
-  HSVState,
-  LightSource,
-  Luminaire,
-  LuminaireUpdateFields,
-} from '../types';
+import { LightSource, Luminaire, LuminaireUpdateFields } from '../types';
+import { ColourModes } from 'chromatism2';
 import { createLightSource } from './lightsource';
 import * as Koa from 'koa';
 import { applyEffectsAll } from './effect';
@@ -35,7 +31,7 @@ const createLuminaire = (
   id: string,
   gateway: string,
   numLightSources: number,
-  initState?: HSVState[],
+  initState?: ColourModes.Any[],
 ): Luminaire => ({
   id,
   gateway,
@@ -61,7 +57,7 @@ export const registerLuminaire = (
   id: string,
   gateway: string,
   numLightSources: number,
-  initState?: HSVState[],
+  initState?: ColourModes.Any[],
 ): Luminaire => {
   if (!state.app) throw new Error('Plugin not yet initialized');
 
@@ -92,11 +88,14 @@ export const registerLuminaire = (
 export const luminaireExists = (id: string): boolean => !!findLuminaire(id);
 
 /**
- * Resizes HSVState[] to target size
+ * Resizes ColourModes.Any[] to target size
  * TODO: use a proper resampling method, like:
  * http://entropymine.com/imageworsener/resample/
  */
-const resizeColors = (source: HSVState[], targetSize: number): HSVState[] => {
+const resizeColors = (
+  source: ColourModes.Any[],
+  targetSize: number,
+): ColourModes.Any[] => {
   // Already correct size, do nothing
   if (source.length === targetSize) return source;
 
@@ -105,7 +104,7 @@ const resizeColors = (source: HSVState[], targetSize: number): HSVState[] => {
   );
 };
 
-const defaultColor: HSVState = { h: 0, s: 0, v: 0 };
+const defaultColor = { h: 0, s: 0, v: 0 };
 
 /**
  * Recalculates current light source color values based on luminaire colors,
@@ -118,8 +117,8 @@ export const recalcLightSources = (luminaire: Luminaire) => {
     new Date().getTime(),
   );
 
-  let oldColors = [defaultColor];
-  let newColors = [defaultColor];
+  let oldColors: ColourModes.Any[] = [defaultColor];
+  let newColors: ColourModes.Any[] = [defaultColor];
 
   // Only calculate old colors if transition still ongoing
   if (progress !== 1) {

@@ -1,5 +1,6 @@
-import { HSVState, EffectOptions, RGBState, StateType } from '../../types';
-import { convertTo, getMsSinceMidnight, transitionValues } from '../../utils';
+import { ColourModes } from 'chromatism2';
+import { EffectOptions } from '../../types';
+import { getMsSinceMidnight, transitionValues } from '../../utils';
 import { clamp } from 'ramda';
 import { convert } from 'chromatism2';
 
@@ -34,7 +35,10 @@ const defaultTempAtHours = {
 
 const startTime = new Date().getTime();
 
-export default (colors: HSVState[], options: EffectOptions): HSVState[] => {
+export default (
+  colors: ColourModes.Any[],
+  options: EffectOptions,
+): ColourModes.Any[] => {
   const tempAtHours = options.tempAtHours || defaultTempAtHours;
   const hour = getMsSinceMidnight() / 1000 / 60 / 60;
   const prevTemp = tempAtHours[Math.floor(hour)] || 0;
@@ -53,12 +57,17 @@ export default (colors: HSVState[], options: EffectOptions): HSVState[] => {
     // get colored by different amounts depending on HSV.v
     // FIXME: this is not exactly correct and will mess up
     // some colors
+
+    // Also this could be more efficient if we don't have to do
+    // all these conversion dances
     lab.L = 50;
     lab.a += tempShift ** 2 * 100;
     if (tempShift)
       lab.b +=
         tempShift / Math.abs(tempShift) * Math.abs(tempShift) ** (1 / 2) * 100;
 
-    return { ...convert(lab).hsv, v: color.v };
+    const hsv = convert(color).hsv;
+
+    return { ...convert(lab).hsv, v: hsv.v };
   });
 };

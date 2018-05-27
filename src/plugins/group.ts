@@ -1,5 +1,6 @@
 import * as Koa from 'koa';
-import { Group, Luminaire, HSVState, LuminaireUpdateFields } from '../types';
+import { ColourModes } from 'chromatism2';
+import { Group, Luminaire, LuminaireUpdateFields } from '../types';
 import {
   recalcLightSources,
   luminaireExists,
@@ -93,7 +94,7 @@ export const getGroupLuminaires = (
 /*
 export const updateGroupLuminaires = (
   id: string,
-  colors: HSVState[],
+  colors: ColourModes.Any[],
   effects: string[],
   transitionTime?: number,
 ): Luminaire[] => {

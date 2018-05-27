@@ -40,7 +40,8 @@
 
 import * as Koa from 'koa';
 import { createSocket, AddressInfo } from 'dgram';
-import { Luminaire, HSVState } from '../../types';
+import { ColourModes, convert } from 'chromatism2';
+import { Luminaire } from '../../types';
 import { registerLuminaire, getLuminaire } from '../../core/luminaire';
 
 const udpServer = createSocket('udp4');
@@ -72,11 +73,11 @@ const send = (client: Client) => () => {
   const array = new Uint8Array(luminaire.lightSources.length * 3 + 7); // + 1 is dither flag, + 3 are rgb gamma correction values, + 3 is for contrast
 
   luminaire.lightSources.forEach((source, index) => {
-    const currentState = source.state;
+    const hsvState = convert(source.state).hsv;
 
-    array[index * 3 + 0] = Math.floor(currentState.h / 360 * 255); // hue
-    array[index * 3 + 1] = Math.floor(currentState.s / 100 * 255); // saturation
-    array[index * 3 + 2] = Math.floor(currentState.v / 100 * 255); // value
+    array[index * 3 + 0] = Math.floor(hsvState.h / 360 * 255); // hue
+    array[index * 3 + 1] = Math.floor(hsvState.s / 100 * 255); // saturation
+    array[index * 3 + 2] = Math.floor(hsvState.v / 100 * 255); // value
 
     // const rgb = convert.hsv.rgb.raw(currentState);
     //

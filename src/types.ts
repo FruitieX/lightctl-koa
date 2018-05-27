@@ -1,38 +1,15 @@
-export interface HSVState {
-  h: number;
-  s: number;
-  v: number;
-}
-
-export interface RGBState {
-  r: number;
-  g: number;
-  b: number;
-}
-
-export interface CTState {
-  c: number;
-  t: number;
-}
-
-export type AnyState = HSVState | RGBState | CTState;
-
-export enum StateType {
-  CT = 'ct',
-  HSV = 'hsv',
-  RGB = 'rgb',
-}
+import { ColourModes } from 'chromatism2';
 
 // A light source, such as an RGB LED.
 export interface LightSource {
-  oldState: HSVState;
-  state: HSVState; // state when transition started
-  newState: HSVState;
+  oldState: ColourModes.Any;
+  state: ColourModes.Any; // state when transition started
+  newState: ColourModes.Any;
   //transitionStart: number; // time when transition started
-  //prevState: HSVState; // state when transition started
+  //prevState: ColourModes.Any; // state when transition started
 
   //transitionEnd: number; // time when transition ends
-  //nextState: HSVState; // reached at transitionEnd
+  //nextState: ColourModes.Any; // reached at transitionEnd
 }
 
 // A light fixture, possibly containing multiple light sources
@@ -42,11 +19,11 @@ export interface Luminaire {
   lightSources: LightSource[];
 
   // old luminaire state (for transitions)
-  oldColors: HSVState[];
+  oldColors: ColourModes.Any[];
   oldEffects: Effect[];
 
   // new (current) luminaire state
-  newColors: HSVState[];
+  newColors: ColourModes.Any[];
   newEffects: Effect[];
 
   transitionTime: number; // duration of transition in milliseconds
@@ -55,7 +32,7 @@ export interface Luminaire {
 
 export interface LuminaireUpdateFields {
   id: string;
-  colors: HSVState[];
+  colors: ColourModes.Any[];
   effects: Effect[];
   transitionTime?: number;
 }
@@ -66,13 +43,13 @@ export interface SceneTarget {
 
   // optional overrides
   effects?: Effect[];
-  colors?: AnyState[];
+  colors?: ColourModes.Any[];
 }
 
 export interface Scene {
   id: string;
   effects: Effect[];
-  colors: AnyState[];
+  colors: ColourModes.Any[];
   targets: SceneTarget[];
 }
 

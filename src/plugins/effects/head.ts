@@ -1,5 +1,5 @@
-import { HSVState } from '../../types';
+import { ColourModes } from 'chromatism2';
 
-export default (colors: HSVState[]): HSVState[] => {
+export default (colors: ColourModes.Any[]): ColourModes.Any[] => {
   return [colors[0]];
 };

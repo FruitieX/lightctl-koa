@@ -1,15 +1,16 @@
-import { HSVState, EffectOptions } from '../../types';
+import { ColourModes } from 'chromatism2';
+import { EffectOptions } from '../../types';
 import { getColorTransition } from '../../utils';
 
 export default (
-  colors: HSVState[],
+  colors: ColourModes.Any[],
   options: EffectOptions,
   luminaireIndex: number,
   luminaireId: string,
   numLightSources: number,
   effectIndex: number,
   numEffects: number,
-): HSVState[] => {
+): ColourModes.Any[] => {
   const t = new Date().getTime();
   const interval = options.interval || 3; // how frequently (seconds) a color moves from light to next
 
