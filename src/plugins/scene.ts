@@ -18,7 +18,7 @@ const state: State = { scenes: [] };
 /**
  * Activates a scene by id. Throws if scene not found.
  */
-const activateScene = (id: string) => {
+export const activateScene = (id: string) => {
   const scene = state.scenes.find(scene => scene.id === id);
 
   if (!scene) throw new Error(`Scene with id '${id}' not found`);
