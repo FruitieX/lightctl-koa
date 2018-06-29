@@ -7,13 +7,28 @@ import {
   setBrightnessOffset,
 } from '../plugins/effects/brightness';
 
+interface Options {
+  preEffects?: Effect[],
+  postEffects?: Effect[]
+}
+
+interface State {
+  preEffects: Effect[],
+  postEffects: Effect[]
+}
+
+const state: State = {
+  preEffects: [],
+  postEffects: []
+};
+
 export const applyEffectsAll = (
   effects: Effect[],
   colors: ColourModes.Any[],
   luminaireId: string,
   numLightSources: number,
 ): ColourModes.Any[] => {
-  return effects.reduce(
+  return [...state.preEffects, ...effects, ...state.postEffects].reduce(
     (accumulatedColors: ColourModes.Any[], effect, effectIndex) => {
       const effectFn = require(`../plugins/effects/${effect.id}`).default;
 
@@ -33,7 +48,10 @@ export const applyEffectsAll = (
   );
 };
 
-export const register = async (app: Koa) => {
+export const register = async (app: Koa, options: Options) => {
+  options.preEffects && (state.preEffects = options.preEffects);
+  options.postEffects && (state.postEffects = options.postEffects);
+
   app.on('adjustBrightnessOffset', ({ delta }) =>
     adjustBrightnessOffset(delta),
   );

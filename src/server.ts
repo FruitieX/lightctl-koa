@@ -4,13 +4,9 @@ import config from './config';
 const init = async () => {
   const app = new Koa();
 
-  // Register core plugins
-  require('./core/luminaire').register(app);
-  require('./core/effect').register(app);
-
-  // Register extra plugins
+  // Register plugins
   for (const path in config) {
-    const options = config[path];
+    const options = config[path] || {};
     await require(path).register(app, options);
   }
 
