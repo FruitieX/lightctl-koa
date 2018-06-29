@@ -46,18 +46,29 @@ import { registerLuminaire, getLuminaire } from '../../core/luminaire';
 
 const udpServer = createSocket('udp4');
 
+interface Mapping {
+  srcStart: number;
+  srcEnd: number;
+  dstStart: number;
+  dstEnd: number;
+}
+
 interface Client {
   addr: AddressInfo;
   id: string;
   gammaCorrection: number[];
   contrast: number[];
   luminaireId: string;
+  mappings?: Mapping[];
   sendInterval?: NodeJS.Timer;
   timeout?: NodeJS.Timer;
 }
 
 interface Options {
   port: number;
+  mappings?: {
+    [id: string]: Mapping[];
+  };
   gammaCorrection: {
     [propName: string]: number[];
   };
@@ -71,13 +82,32 @@ const clients: Client[] = [];
 const send = (client: Client) => () => {
   const luminaire = getLuminaire(client.luminaireId);
   const array = new Uint8Array(luminaire.lightSources.length * 3 + 7); // + 1 is dither flag, + 3 are rgb gamma correction values, + 3 is for contrast
+  const mappings = client.mappings;
 
   luminaire.lightSources.forEach((source, index) => {
     const hsvState = convert(source.state).hsv;
 
-    array[index * 3 + 0] = Math.floor(hsvState.h / 360 * 255); // hue
-    array[index * 3 + 1] = Math.floor(hsvState.s / 100 * 255); // saturation
-    array[index * 3 + 2] = Math.floor(hsvState.v / 100 * 255); // value
+    let targetIndex = index;
+
+    if (mappings) {
+      mappings.forEach(mapping => {
+        if (index >= mapping.srcStart && index <= mapping.srcEnd) {
+          const indexInMap = index - mapping.srcStart;
+
+          if (mapping.dstStart > mapping.dstEnd) {
+            // Direction reversed
+            targetIndex = mapping.dstStart - indexInMap;
+          } else {
+            // Direction preserved
+            targetIndex = indexInMap + mapping.dstStart;
+          }
+        }
+      });
+    }
+
+    array[targetIndex * 3 + 0] = Math.floor((hsvState.h / 360) * 255); // hue
+    array[targetIndex * 3 + 1] = Math.floor((hsvState.s / 100) * 255); // saturation
+    array[targetIndex * 3 + 2] = Math.floor((hsvState.v / 100) * 255); // value
 
     // const rgb = convert.hsv.rgb.raw(currentState);
     //
@@ -187,6 +217,7 @@ export const register = async (app: Koa, options: Options) => {
         gammaCorrection: gammaCorrection[id] || [220, 250, 180],
         contrast: contrast[id] || [255, 255, 255],
         luminaireId: luminaire.id,
+        mappings: options.mappings && options.mappings[id]
       };
 
       setClientTimeout(client);
