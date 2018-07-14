@@ -60,8 +60,10 @@ export default (
   const t = new Date().getTime();
   const dt = t - luminaireState.lastUpdate;
 
+  const minStars = isNaN(options.minStars) ? 3 : options.minStars;
+
   // Spawn new star
-  if (luminaireState.stars.length < 3 || (Math.random() < (options.spawnProbability || 0.005))) {
+  if (luminaireState.stars.length < minStars || (Math.random() < (options.spawnProbability || 0.005))) {
     // if (luminaireState.stars.length === 0) {
     const leftSpawn = Math.random() < 0.5;
     // const leftSpawn = false;
