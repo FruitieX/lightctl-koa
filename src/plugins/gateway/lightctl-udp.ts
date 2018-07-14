@@ -214,14 +214,14 @@ export const register = async (app: Koa, options: Options) => {
       let client: Client = {
         addr,
         id,
-        gammaCorrection: gammaCorrection[id] || [220, 250, 180],
+        gammaCorrection: gammaCorrection[id] || [255, 255, 255],
         contrast: contrast[id] || [255, 255, 255],
         luminaireId: luminaire.id,
         mappings: options.mappings && options.mappings[id]
       };
 
       setClientTimeout(client);
-      client.sendInterval = setInterval(send(client), 10);
+      client.sendInterval = setInterval(send(client), 20);
 
       clients.push(client);
     }
