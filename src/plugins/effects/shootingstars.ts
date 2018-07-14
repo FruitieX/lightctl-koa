@@ -13,6 +13,7 @@ interface Star {
 
 interface LuminaireState {
   stars: Star[];
+  colorIndex: number;
   lastUpdate: number;
 }
 
@@ -28,6 +29,7 @@ const state: State = {
 
 const defaultLuminaireState: LuminaireState = {
   stars: [],
+  colorIndex: 0,
   lastUpdate: new Date().getTime(),
 };
 
@@ -54,7 +56,7 @@ export default (
   const dt = t - luminaireState.lastUpdate;
 
   // Spawn new star
-  if (luminaireState.stars.length === 0 || (Math.random() < (options.spawnProbability || 0.005))) {
+  if (luminaireState.stars.length < 3 || (Math.random() < (options.spawnProbability || 0.005))) {
     // if (luminaireState.stars.length === 0) {
     const leftSpawn = Math.random() < 0.5;
     // const leftSpawn = false;
@@ -67,10 +69,13 @@ export default (
       (leftSpawn ? 1 : -1) *
       // Speed
       (Math.random() * (maxSpeed - minSpeed) + minSpeed);
+
+    luminaireState.colorIndex = (luminaireState.colorIndex + 1) % colors.length
+
     luminaireState.stars.push({
       pos,
       velocity,
-      colorIndex: Math.floor(Math.random() * colors.length),
+      colorIndex: luminaireState.colorIndex,
       trailLength: Math.floor(10 + Math.abs(velocity) / 2),
       //trailLength: 8,
     });
@@ -134,7 +139,8 @@ export default (
     const color = convert(colors[star.colorIndex] || colors[0]).cielab;
 
     values.forEach((value, index) => {
-      output[index].L = Math.min(maxLightness, output[index].L + value * color.L);
+      //output[index].L = Math.min(maxLightness, output[index].L + value * color.L);
+      output[index].L = Math.max(output[index].L, value * color.L);
       output[index].a += value * color.a;
       output[index].b += value * color.b;
       //totalValForPixel[index] = totalValForPixel[index] ? totalValForPixel[index] + value : 0;
