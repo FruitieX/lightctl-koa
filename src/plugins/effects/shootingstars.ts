@@ -43,8 +43,13 @@ export default (
   numEffects: number,
 ): ColourModes.Any[] => {
   let output = [...Array(numLightSources)].map(() => ({
-    L: 0,
-    a: 0,
+    h: 0,
+    s: 0,
+    v: 0,
+  }));
+  let outputColors = [...Array(numLightSources)].map(() => ({
+    r: 0,
+    g: 0,
     b: 0,
   }));
 
@@ -133,18 +138,25 @@ export default (
 
   const maxLightness = 100;
 
-  const totalValForPixel: number[]  = [];
+  const maxValues: number[] = [...Array(numLightSources)].map(() => 0);
   starValues.forEach((values, starIndex) => {
     const star = luminaireState.stars[starIndex];
-    const color = convert(colors[star.colorIndex] || colors[0]).cielab;
+    const color = convert(colors[star.colorIndex] || colors[0]).rgb;
 
     values.forEach((value, index) => {
-      //output[index].L = Math.min(maxLightness, output[index].L + value * color.L);
-      output[index].L = Math.max(output[index].L, value * color.L);
-      output[index].a += value * color.a;
-      output[index].b += value * color.b;
-      //totalValForPixel[index] = totalValForPixel[index] ? totalValForPixel[index] + value : 0;
+      outputColors[index].r += value * color.r;
+      outputColors[index].g += value * color.g;
+      outputColors[index].b += value * color.b;
+      maxValues[index] = Math.max(maxValues[index], value);
     });
+  });
+
+  [...Array(numLightSources)].map((_, index) => {
+    const hsv = convert(outputColors[index]).hsv;
+
+    output[index].h = hsv.h;
+    output[index].s = hsv.s;
+    output[index].v = maxValues[index] * 100;
   });
 
   luminaireState.lastUpdate = t;
