@@ -87,4 +87,7 @@ export const register = async (app: Koa, options: Options) => {
     cycleScenes(scenes),
   );
   app.on('activateScene', ({ id }: { id: string }) => activateScene(id));
+
+  // Activate first scene
+  if (state.scenes[0]) activateScene(state.scenes[0].id);
 };

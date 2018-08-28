@@ -244,12 +244,12 @@ const luminairesUpdated = async (
       body: {
         on: state.v !== 0,
         // Our h value is in [0, 360[, Hue uses [0, 65536[
-        hue: Math.round(state.h / 360 * 65536),
+        hue: Math.round((state.h / 360) * 65536),
         // Our s value is in [0, 100], Hue uses [0, 254]
-        sat: Math.round(state.s / 100 * 254),
+        sat: Math.round((state.s / 100) * 254),
         // Our v value is in [0, 100], Hue uses [1, 254]
         // (but seems to accept 0 just fine)
-        bri: Math.round(state.v / 100 * 254),
+        bri: Math.round((state.v / 100) * 254),
 
         // Hue uses hundredths of a second as transitiontime unit
         transitiontime: Math.round(transitionTime / 100),
@@ -513,9 +513,9 @@ export const register = async (app: Koa, options: Options) => {
     forEachObjIndexed((light, lightId) => {
       const luminaire = registerLuminaire(light.name, 'hue', 1, [
         {
-          h: light.state.hue / 65536 * 360,
-          s: light.state.sat / 254 * 100,
-          v: light.state.bri / 254 * 100,
+          h: (light.state.hue / 65536) * 360,
+          s: (light.state.sat / 254) * 100,
+          v: (light.state.bri / 254) * 100,
         },
       ]);
       state.hueLuminaires.push({ luminaire, light, lightId });

@@ -5,7 +5,16 @@ import * as Koa from 'koa';
 import { applyEffectsAll } from './effect';
 import { calculateTransitionProgress, getColorTransition } from '../utils';
 
-interface Options {}
+interface LuminaireOptions {
+  brightness?: number;
+  numLightSources?: number;
+}
+
+interface Options {
+  luminaires: {
+    [id: string]: LuminaireOptions;
+  };
+}
 
 interface State {
   app?: Koa;
@@ -61,25 +70,33 @@ export const registerLuminaire = (
 ): Luminaire => {
   if (!state.app) throw new Error('Plugin not yet initialized');
 
-  const existingIndex = findLuminaireIndex(id);
-  if (existingIndex !== -1)
-    console.log(`Luminaire already exists with id '${id}', replacing...`);
+  //const existingIndex = findLuminaireIndex(id);
+
+  // if (existingIndex !== -1)
+  // console.log(`Luminaire already exists with id '${id}', replacing...`);
   // throw new Error(`Luminaire already exists with id '${id}'`);
 
-  const luminaire = createLuminaire(id, gateway, numLightSources, initState);
+  //const luminaire = createLuminaire(id, gateway, numLightSources, initState);
 
+  const luminaire = getLuminaire(id);
+  luminaire.gateway = gateway;
+
+  /*
   if (existingIndex !== -1) {
     state.luminaires[existingIndex] = luminaire;
   } else {
     state.luminaires.push(luminaire);
   }
+  */
 
-  // TODO: this is not a deep copy
-  const copy = { ...luminaire };
-  state.app.emit('luminaireRegistered', copy);
+  state.app.emit('luminaireRegistered', luminaire);
 
-  console.log('Luminaire', id, 'registered.');
-  return copy;
+  console.log(
+    `Luminaire ${id} registered (${luminaire.lightSources.length} light${
+      luminaire.lightSources.length === 1 ? '' : 's'
+    }).`,
+  );
+  return luminaire;
 };
 
 /**
@@ -100,7 +117,7 @@ const resizeColors = (
   if (source.length === targetSize) return source;
 
   return [...Array(targetSize)].map(
-    (_, i) => source[Math.floor(i / targetSize * source.length)],
+    (_, i) => source[Math.floor((i / targetSize) * source.length)],
   );
 };
 
@@ -162,9 +179,7 @@ export const getLuminaire = (id: string): Luminaire => {
 
   recalcLightSources(luminaire);
 
-  // TODO: this is not a deep copy
-  const copy = { ...luminaire };
-  return copy;
+  return luminaire;
 };
 
 /**
@@ -193,10 +208,7 @@ const updateLuminaire = ({
 
   recalcLightSources(luminaire);
 
-  // TODO: this is not a deep copy
-  const copy = { ...luminaire };
-  //state.app.emit('luminairesUpdated', [copy]);
-  return copy;
+  return luminaire;
 };
 
 /**
@@ -225,4 +237,14 @@ export const register = async (app: Koa, options: Options) => {
     ({ fieldsList }: { fieldsList: LuminaireUpdateFields[] }) =>
       updateLuminaires(fieldsList),
   );
+
+  Object.entries(options.luminaires).forEach(([id, luminaireOptions]) => {
+    // Initial registration of all luminaires
+    const luminaire = createLuminaire(
+      id,
+      'dummy',
+      luminaireOptions.numLightSources || 1,
+    );
+    state.luminaires.push(luminaire);
+  });
 };
