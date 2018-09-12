@@ -2,7 +2,7 @@
 
 A rewrite of lightctl using Koa and TypeScript.
 
-lightctl aims to provide a pleasant API for smart lighting systems.
+lightctl aims to provide a sane, unified API for various smart lighting systems.
 
 ### Supported protocols / API:s
 
