@@ -14,6 +14,7 @@ export interface Room {
   id: string;
   zones: Zone[];
   icon?: string;
+  roomLuminaires?: string[];
 }
 
 export type RoomConfig = Room[];
@@ -26,6 +27,17 @@ const state: State = {
   rooms: [],
 };
 
+/**
+ * Returns current rooms state
+ */
+export const getRooms = () => state.rooms;
+
+/**
+ * Returns luminaires that are located in given room
+ *
+ * @param luminaires List of luminaires to test against
+ * @param room The room to test against
+ */
 const getLuminairesInRoom = (
   luminaires: Luminaire[],
   room: Room,
@@ -47,12 +59,16 @@ const getLuminairesInRoom = (
     return luminaireInZone;
   });
 
+/**
+ * Recalculates room luminaires and recreates groups based on results.
+ */
 const updateRooms = () => {
   const luminaires = getLuminaireIdList().map(getLuminaire);
 
   state.rooms.forEach(room => {
     const roomLuminaires = getLuminairesInRoom(luminaires, room);
 
+    room.roomLuminaires = roomLuminaires.map(luminaire => luminaire.id);
     if (roomLuminaires.length) {
       addGroup(
         createGroup(room.id, roomLuminaires.map(luminaire => luminaire.id)),
