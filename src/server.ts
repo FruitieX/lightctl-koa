@@ -1,14 +1,15 @@
 import * as Koa from 'koa';
 import config from './config';
 
-// core plugins
+// Core plugins
 import * as luminaire from './core/luminaire';
 import * as effect from './core/effect';
 import * as group from './core/group';
 import * as room from './core/room';
 import * as scene from './core/scene';
 
-const init = async () => {
+// Perform initialization
+(async () => {
   const app = new Koa();
 
   // Register core plugins
@@ -25,9 +26,4 @@ const init = async () => {
   }
 
   app.emit('start');
-};
-
-init();
-
-//app.listen(config.port);
-//console.log(`Server running on port ${config.port}`);
+})();

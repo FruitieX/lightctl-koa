@@ -9,27 +9,31 @@ export interface LightSource {
   oldState: ColourModes.Any;
   state: ColourModes.Any; // state when transition started
   newState: ColourModes.Any;
-  //transitionStart: number; // time when transition started
-  //prevState: ColourModes.Any; // state when transition started
-
-  //transitionEnd: number; // time when transition ends
-  //nextState: ColourModes.Any; // reached at transitionEnd
+  pos?: Coordinate;
 }
 
-export type LuminaireConfig = {
+type FillStrategy = 'x-axis' | 'y-axis' | 'z-axis' | 'loop';
+
+export interface LuminaireOptions {
   id: string;
-  x?: number;
-  y?: number;
-  z?: number;
-  end?: Coordinate;
+  pos?: Coordinate; // center point of the light
+  dimensions?: Coordinate; // luminaire bounding box dimensions, with centre point in luminaire pos
+  fillStrategy?: FillStrategy; // how to fill in light sources in luminaire when there are > 1 lightsources
   numLightSources?: number;
   brightness?: number;
   ignore?: boolean;
-}[];
+}
+
+export type LuminaireConfig = LuminaireOptions[];
 
 // A light fixture, possibly containing multiple light sources
 export interface Luminaire {
   id: string;
+  pos?: Coordinate;
+  dimensions?: Coordinate;
+  brightness: number;
+  ignore: boolean;
+
   gateway: string;
   lightSources: LightSource[];
 
@@ -52,17 +56,6 @@ export interface LuminaireUpdateFields {
   transitionTime?: number;
 }
 
-interface LuminaireOptions {
-  brightness?: number;
-  numLightSources?: number;
-}
-
-interface Options {
-  luminaires: {
-    [id: string]: LuminaireOptions;
-  };
-}
-
 interface State {
   app?: Koa;
   luminaires: Luminaire[];
@@ -73,13 +66,19 @@ const state: State = {
 };
 
 export const createLightSource = (
+  index: number,
+  luminaireOptions: LuminaireOptions,
   // White by default
   initState: ColourModes.Any = { h: 0, s: 0, v: 100 },
-): LightSource => ({
-  oldState: initState,
-  state: initState,
-  newState: initState,
-});
+): LightSource => {
+  // TODO: handle different fill strategies and position light source correctly
+  return {
+    pos: luminaireOptions.pos,
+    oldState: initState,
+    state: initState,
+    newState: initState,
+  };
+};
 
 const findLuminaire = (id: string): Luminaire | undefined => {
   return state.luminaires.find(luminaire => luminaire.id === id);
@@ -92,22 +91,21 @@ export const findLuminaireIndex = (id: string): number => {
 /**
  * Creates and returns a new luminaire with all lights initially off
  */
-const createLuminaire = (
-  id: string,
-  gateway: string,
-  numLightSources: number,
-  initState?: ColourModes.Any[],
-): Luminaire => ({
-  id,
-  gateway,
-  lightSources: [...Array(numLightSources)].map((_, i) =>
-    createLightSource(initState && initState[i]),
+const createLuminaire = (luminaireOptions: LuminaireOptions): Luminaire => ({
+  id: luminaireOptions.id,
+  pos: luminaireOptions.pos,
+  ignore: luminaireOptions.ignore || false,
+  brightness:
+    luminaireOptions.brightness === undefined ? 1 : luminaireOptions.brightness,
+  gateway: 'dummy',
+  lightSources: [...Array(luminaireOptions.numLightSources || 1)].map(
+    (_, index) => createLightSource(index, luminaireOptions),
   ),
 
-  oldColors: [...(initState || [])],
+  oldColors: [],
   oldEffects: [],
 
-  newColors: [...(initState || [])],
+  newColors: [],
   newEffects: [],
 
   transitionTime: 0,
@@ -118,32 +116,11 @@ const createLuminaire = (
  * Register a new luminaire into state and notifies listeners about the
  * registration. Returns created luminaire.
  */
-export const registerLuminaire = (
-  id: string,
-  gateway: string,
-  numLightSources: number,
-  initState?: ColourModes.Any[],
-): Luminaire => {
+export const registerLuminaire = (id: string, gateway: string): Luminaire => {
   if (!state.app) throw new Error('Plugin not yet initialized');
-
-  //const existingIndex = findLuminaireIndex(id);
-
-  // if (existingIndex !== -1)
-  // console.log(`Luminaire already exists with id '${id}', replacing...`);
-  // throw new Error(`Luminaire already exists with id '${id}'`);
-
-  //const luminaire = createLuminaire(id, gateway, numLightSources, initState);
 
   const luminaire = getLuminaire(id);
   luminaire.gateway = gateway;
-
-  /*
-  if (existingIndex !== -1) {
-    state.luminaires[existingIndex] = luminaire;
-  } else {
-    state.luminaires.push(luminaire);
-  }
-  */
 
   state.app.emit('luminaireRegistered', luminaire);
 
@@ -152,6 +129,7 @@ export const registerLuminaire = (
       luminaire.lightSources.length === 1 ? '' : 's'
     }).`,
   );
+
   return luminaire;
 };
 
@@ -300,13 +278,8 @@ export const register = async (app: Koa, config: LuminaireConfig) => {
       updateLuminaires(fieldsList),
   );
 
-  config.forEach(luminaireConfig => {
-    // Initial registration of all luminaires
-    const luminaire = createLuminaire(
-      luminaireConfig.id,
-      'dummy',
-      luminaireConfig.numLightSources || 1,
-    );
-    state.luminaires.push(luminaire);
-  });
+  // Initial registration of all luminaires
+  config.forEach(luminaireConfig =>
+    state.luminaires.push(createLuminaire(luminaireConfig)),
+  );
 };

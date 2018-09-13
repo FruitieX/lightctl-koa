@@ -79,7 +79,7 @@ export const updateLuminaireOrGroup = (
  * @param id Group ID
  * @param luminaires List of luminaireIds
  */
-const createGroup = (id: string, luminaires: string[]): Group => ({
+export const createGroup = (id: string, luminaires: string[]): Group => ({
   id,
   luminaires,
 });
@@ -89,8 +89,8 @@ const createGroup = (id: string, luminaires: string[]): Group => ({
  *
  * @param group Group to add to the state
  */
-const addGroup = (group: Group) => {
-  console.log('Adding group', group.id);
+export const addGroup = (group: Group) => {
+  console.log(`Adding group: ${group.id} (${group.luminaires.join(', ')})`);
   state.groups[group.id] = group;
 };
 
