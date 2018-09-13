@@ -26,7 +26,7 @@ interface Options {
   username: string;
   sensors: Sensor[];
   customPollLogic?: {
-    [luminaireId: string]: Function;
+    [luminaireId: string]: (bridgeLight: BridgeLight, old: BridgeLight) => void;
   };
 }
 
@@ -37,7 +37,7 @@ interface BridgeLightstate {
   on: boolean;
 }
 
-interface BridgeLight {
+export interface BridgeLight {
   name: string;
   state: BridgeLightstate;
 }
