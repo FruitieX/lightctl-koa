@@ -1,25 +1,38 @@
 import * as Koa from 'koa';
 import { ColourModes } from 'chromatism2';
-import { Effect } from '../types';
 import { findLuminaireIndex } from './luminaire';
 import {
   adjustBrightnessOffset,
   setBrightnessOffset,
 } from '../plugins/effects/brightness';
 
+export interface EffectConfig {
+  preEffects?: Effect[];
+  postEffects?: Effect[];
+}
+
+export interface EffectOptions {
+  [key: string]: any;
+}
+
+export interface Effect {
+  id: string;
+  options?: EffectOptions;
+}
+
 interface Options {
-  preEffects?: Effect[],
-  postEffects?: Effect[]
+  preEffects?: Effect[];
+  postEffects?: Effect[];
 }
 
 interface State {
-  preEffects: Effect[],
-  postEffects: Effect[]
+  preEffects: Effect[];
+  postEffects: Effect[];
 }
 
 const state: State = {
   preEffects: [],
-  postEffects: []
+  postEffects: [],
 };
 
 export const applyEffectsAll = (
@@ -48,9 +61,9 @@ export const applyEffectsAll = (
   );
 };
 
-export const register = async (app: Koa, options: Options) => {
-  options.preEffects && (state.preEffects = options.preEffects);
-  options.postEffects && (state.postEffects = options.postEffects);
+export const register = async (app: Koa, config: EffectConfig) => {
+  config.preEffects && (state.preEffects = config.preEffects);
+  config.postEffects && (state.postEffects = config.postEffects);
 
   app.on('adjustBrightnessOffset', ({ delta }) =>
     adjustBrightnessOffset(delta),

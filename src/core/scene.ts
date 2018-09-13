@@ -1,9 +1,27 @@
 import * as Koa from 'koa';
 import { ColourModes, convert } from 'chromatism2';
-import { Scene, LuminaireUpdateFields } from '../types';
-import { updateLuminaires } from '../core/luminaire';
+import { updateLuminaires, LuminaireUpdateFields } from './luminaire';
 import { groupExists, getGroup } from './group';
 import { flatten } from 'ramda';
+import { Effect } from './effect';
+
+export interface SceneTarget {
+  id: string;
+  brightness?: number;
+
+  // optional overrides
+  effects?: Effect[];
+  colors?: ColourModes.Any[];
+}
+
+export interface Scene {
+  id: string;
+  effects: Effect[];
+  colors: ColourModes.Any[];
+  targets: SceneTarget[];
+}
+
+export type SceneConfig = Scene[];
 
 type Options = Scene[];
 
@@ -82,6 +100,8 @@ export const cycleScenes = (scenes: string[]) => {
 export const register = async (app: Koa, options: Options) => {
   state.app = app;
   state.scenes = options;
+
+  console.log('Registered scenes:', state.scenes.map(scene => scene.id));
 
   app.on('cycleScenes', ({ scenes }: { scenes: string[] }) =>
     cycleScenes(scenes),

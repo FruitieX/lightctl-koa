@@ -1,5 +1,5 @@
 import { ColourModes, convert } from 'chromatism2';
-import { EffectOptions } from '../../types';
+import { EffectOptions } from '../../core/effect';
 
 const calcBrightness = (
   speed: number,
@@ -8,7 +8,7 @@ const calcBrightness = (
 ): number => {
   const t = new Date().getTime();
 
-  return Math.sin(t / 1000 * speed + index * spread) / 2 + 0.5;
+  return Math.sin((t / 1000) * speed + index * spread) / 2 + 0.5;
 };
 
 export default (

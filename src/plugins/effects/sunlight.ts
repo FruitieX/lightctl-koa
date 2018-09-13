@@ -1,8 +1,8 @@
 import { ColourModes } from 'chromatism2';
-import { EffectOptions } from '../../types';
 import { getMsSinceMidnight, transitionValues } from '../../utils';
 import { clamp } from 'ramda';
 import { convert } from 'chromatism2';
+import { EffectOptions } from '../../core/effect';
 
 const night = 0.5;
 const day = -0.05;
@@ -48,7 +48,7 @@ export default (
   let tempShift = transitionValues(prevTemp, nextTemp, progress);
 
   if (tempShift)
-    tempShift = tempShift / Math.abs(tempShift) * Math.abs(tempShift) ** 1.5;
+    tempShift = (tempShift / Math.abs(tempShift)) * Math.abs(tempShift) ** 1.5;
 
   return colors.map(color => {
     const lab = convert(color).cielab;
@@ -64,7 +64,9 @@ export default (
     lab.a += tempShift ** 2 * 100;
     if (tempShift)
       lab.b +=
-        tempShift / Math.abs(tempShift) * Math.abs(tempShift) ** (1 / 2) * 100;
+        (tempShift / Math.abs(tempShift)) *
+        Math.abs(tempShift) ** (1 / 2) *
+        100;
 
     const hsv = convert(color).hsv;
 

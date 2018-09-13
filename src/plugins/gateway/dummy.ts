@@ -34,8 +34,7 @@
  */
 
 import * as Koa from 'koa';
-import { registerLuminaire } from '../../core/luminaire';
-import { Luminaire } from '../../types';
+import { registerLuminaire, Luminaire } from '../../core/luminaire';
 
 interface Options {
   luminaires: [

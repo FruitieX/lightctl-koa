@@ -2,7 +2,7 @@ import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 import { updateLuminaires } from '../../core/luminaire';
-import { activateScene } from '../../plugins/scene';
+import { activateScene } from '../../core/scene';
 
 interface Options {
   port?: number;

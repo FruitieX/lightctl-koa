@@ -1,6 +1,6 @@
 import { ColourModes } from 'chromatism2';
-import { EffectOptions } from '../../types';
 import { convert } from 'chromatism2';
+import { EffectOptions } from '../../core/effect';
 
 const calcPlasma = (x: number, y = 1, timeOffset = 0, rate = 1, b = 4) => {
   const t = (new Date().getTime() / 1000 + timeOffset * 1000) * rate;
@@ -21,7 +21,7 @@ const calcPlasma = (x: number, y = 1, timeOffset = 0, rate = 1, b = 4) => {
   blend *= b;
 
   // constrain to [0, 1]
-  blend = Math.sin(blend * Math.PI / 2) / 2 + 0.5;
+  blend = Math.sin((blend * Math.PI) / 2) / 2 + 0.5;
 
   return blend;
 };
@@ -49,13 +49,19 @@ export default (
     const rgb = convert(color).rgb;
 
     output = output.map((out, outIndex) => {
-      const plasma = calcPlasma(((outIndex / numLightSources) * 2 - 1) / scale, 0, colorIndex, rate, blend);
+      const plasma = calcPlasma(
+        ((outIndex / numLightSources) * 2 - 1) / scale,
+        0,
+        colorIndex,
+        rate,
+        blend,
+      );
 
       return {
         r: out.r + rgb.r * plasma,
         g: out.g + rgb.g * plasma,
         b: out.b + rgb.b * plasma,
-      }
+      };
     });
   });
 

@@ -1,6 +1,5 @@
 import { convert, ColourModes } from 'chromatism2';
-import { EffectOptions } from '../../types';
-import { getColorTransition } from '../../utils';
+import { EffectOptions } from '../../core/effect';
 
 export default (
   colors: ColourModes.Any[],
@@ -15,8 +14,7 @@ export default (
   const rate = options.rate || 50;
 
   return colors.map((color, index) => {
-    const offset =
-      (t / 1000 * rate);
+    const offset = (t / 1000) * rate;
 
     const hsv = { ...convert(color).hsv };
 

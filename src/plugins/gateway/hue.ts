@@ -4,10 +4,13 @@
 
 import * as Koa from 'koa';
 import * as R from 'ramda';
-import { registerLuminaire, getLuminaire } from '../../core/luminaire';
-import { Luminaire, Group } from '../../types';
+import {
+  registerLuminaire,
+  getLuminaire,
+  Luminaire,
+} from '../../core/luminaire';
 import request = require('request-promise-native');
-import { getGroups } from '../group';
+import { getGroups, Group } from '../../core/group';
 import { forEachObjIndexed, intersection, reduce } from 'ramda';
 import { convert } from 'chromatism2';
 
@@ -518,7 +521,7 @@ export const register = async (app: Koa, options: Options) => {
           v: (light.state.bri / 254) * 100,
         },
       ]);
-      state.hueLuminaires.push({ luminaire, light, lightId });
+      state.hueLuminaires.push({ luminaire, light, lightId: <string>lightId });
     }, state.bridgeLights);
 
     // Delete all existing groups

@@ -1,5 +1,5 @@
 import { ColourModes } from 'chromatism2';
-import { EffectOptions } from '../../types';
+import { EffectOptions } from '../../core/effect';
 
 export default (
   colors: ColourModes.Any[],
@@ -16,7 +16,8 @@ export default (
 
   const rate = options.rate || 10;
 
-  const index = (Math.floor(new Date().getTime() / 1000 * rate)) % numLightSources;
+  const index =
+    Math.floor((new Date().getTime() / 1000) * rate) % numLightSources;
 
   if (index === 0) {
     output[index] = { r: 255, g: 0, b: 0 };

@@ -40,8 +40,7 @@
 
 import * as Koa from 'koa';
 import { createSocket, AddressInfo } from 'dgram';
-import { ColourModes, convert } from 'chromatism2';
-import { Luminaire } from '../../types';
+import { convert } from 'chromatism2';
 import { registerLuminaire, getLuminaire } from '../../core/luminaire';
 
 const udpServer = createSocket('udp4');
@@ -217,7 +216,7 @@ export const register = async (app: Koa, options: Options) => {
         gammaCorrection: gammaCorrection[id] || [255, 255, 255],
         contrast: contrast[id] || [255, 255, 255],
         luminaireId: luminaire.id,
-        mappings: options.mappings && options.mappings[id]
+        mappings: options.mappings && options.mappings[id],
       };
 
       setClientTimeout(client);

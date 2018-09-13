@@ -1,7 +1,7 @@
 import { ColourModes, convert } from 'chromatism2';
 import { clamp } from 'ramda';
-import { EffectOptions } from '../../types';
 import { getMsSinceMidnight, transitionValues } from '../../utils';
+import { EffectOptions } from '../../core/effect';
 
 const night = 0.7;
 const defaultBriAtHours = {

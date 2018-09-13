@@ -1,9 +1,56 @@
-import { LightSource, Luminaire, LuminaireUpdateFields } from '../types';
-import { ColourModes } from 'chromatism2';
-import { createLightSource } from './lightsource';
 import * as Koa from 'koa';
-import { applyEffectsAll } from './effect';
+import { ColourModes } from 'chromatism2';
+import { applyEffectsAll, Effect } from './effect';
 import { calculateTransitionProgress, getColorTransition } from '../utils';
+import { Coordinate } from './room';
+
+// A light source, such as an RGB LED.
+export interface LightSource {
+  oldState: ColourModes.Any;
+  state: ColourModes.Any; // state when transition started
+  newState: ColourModes.Any;
+  //transitionStart: number; // time when transition started
+  //prevState: ColourModes.Any; // state when transition started
+
+  //transitionEnd: number; // time when transition ends
+  //nextState: ColourModes.Any; // reached at transitionEnd
+}
+
+export type LuminaireConfig = {
+  id: string;
+  x?: number;
+  y?: number;
+  z?: number;
+  end?: Coordinate;
+  numLightSources?: number;
+  brightness?: number;
+  ignore?: boolean;
+}[];
+
+// A light fixture, possibly containing multiple light sources
+export interface Luminaire {
+  id: string;
+  gateway: string;
+  lightSources: LightSource[];
+
+  // old luminaire state (for transitions)
+  oldColors: ColourModes.Any[];
+  oldEffects: Effect[];
+
+  // new (current) luminaire state
+  newColors: ColourModes.Any[];
+  newEffects: Effect[];
+
+  transitionTime: number; // duration of transition in milliseconds
+  transitionStart: number; // time when transition started
+}
+
+export interface LuminaireUpdateFields {
+  id: string;
+  colors: ColourModes.Any[];
+  effects: Effect[];
+  transitionTime?: number;
+}
 
 interface LuminaireOptions {
   brightness?: number;
@@ -24,6 +71,15 @@ interface State {
 const state: State = {
   luminaires: [],
 };
+
+export const createLightSource = (
+  // White by default
+  initState: ColourModes.Any = { h: 0, s: 0, v: 100 },
+): LightSource => ({
+  oldState: initState,
+  state: initState,
+  newState: initState,
+});
 
 const findLuminaire = (id: string): Luminaire | undefined => {
   return state.luminaires.find(luminaire => luminaire.id === id);
@@ -183,6 +239,12 @@ export const getLuminaire = (id: string): Luminaire => {
 };
 
 /**
+ * Returns a list of luminaire ID:s.
+ */
+export const getLuminaireIdList = (): string[] =>
+  state.luminaires.map(luminaire => luminaire.id);
+
+/**
  * Update luminaire by id. Returns luminaire with recalculated lightSource
  * colors (also emitted to listeners). Throws error if luminaire not found.
  */
@@ -229,7 +291,7 @@ export const updateLuminaires = (
   return luminaires;
 };
 
-export const register = async (app: Koa, options: Options) => {
+export const register = async (app: Koa, config: LuminaireConfig) => {
   state.app = app;
 
   app.on(
@@ -238,12 +300,12 @@ export const register = async (app: Koa, options: Options) => {
       updateLuminaires(fieldsList),
   );
 
-  Object.entries(options.luminaires).forEach(([id, luminaireOptions]) => {
+  config.forEach(luminaireConfig => {
     // Initial registration of all luminaires
     const luminaire = createLuminaire(
-      id,
+      luminaireConfig.id,
       'dummy',
-      luminaireOptions.numLightSources || 1,
+      luminaireConfig.numLightSources || 1,
     );
     state.luminaires.push(luminaire);
   });

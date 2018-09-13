@@ -1,8 +1,8 @@
 import { ColourModes } from 'chromatism2';
-import { EffectOptions } from '../../types';
 import { getColorTransition } from '../../utils';
 import { convert } from 'chromatism2';
 import { clone } from 'ramda';
+import { EffectOptions } from '../../core/effect';
 
 interface Star {
   pos: number;
@@ -63,7 +63,10 @@ export default (
   const minStars = isNaN(options.minStars) ? 3 : options.minStars;
 
   // Spawn new star
-  if (luminaireState.stars.length < minStars || (Math.random() < (options.spawnProbability || 0.005))) {
+  if (
+    luminaireState.stars.length < minStars ||
+    Math.random() < (options.spawnProbability || 0.005)
+  ) {
     // if (luminaireState.stars.length === 0) {
     const leftSpawn = Math.random() < 0.5;
     // const leftSpawn = false;
@@ -77,7 +80,7 @@ export default (
       // Speed
       (Math.random() * (maxSpeed - minSpeed) + minSpeed);
 
-    luminaireState.colorIndex = (luminaireState.colorIndex + 1) % colors.length
+    luminaireState.colorIndex = (luminaireState.colorIndex + 1) % colors.length;
 
     luminaireState.stars.push({
       pos,

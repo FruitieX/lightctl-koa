@@ -1,6 +1,6 @@
 import { ColourModes } from 'chromatism2';
-import { EffectOptions } from '../../types';
 import { getColorTransition } from '../../utils';
+import { EffectOptions } from '../../core/effect';
 
 export default (
   colors: ColourModes.Any[],
@@ -15,7 +15,7 @@ export default (
   if (colors.length === numLightSources) return colors;
 
   return [...Array(numLightSources)].map((_, i) => {
-    const pos = i / numLightSources * colors.length;
+    const pos = (i / numLightSources) * colors.length;
     const leftColor = colors[Math.floor(pos)];
     const rightColor = colors[Math.ceil(pos)] || colors[colors.length - 1];
 

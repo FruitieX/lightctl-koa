@@ -1,27 +1,26 @@
-import cosmiconfig = require('cosmiconfig');
-import { Scene, Group, Luminaire } from './types';
+import config from '../lightctl.config';
 
-interface Config {
-  './plugins/group'?: { [propName: string]: Group };
-  './plugins/scene'?: { [propName: string]: Scene };
-  [propName: string]: any; // TODO
+import { RoomConfig } from './core/room';
+import { GroupConfig } from './core/group';
+import { EffectConfig } from './core/effect';
+import { LuminaireConfig } from './core/luminaire';
+import { SceneConfig } from './core/scene';
+
+// TODO: union of all possible plugin configs
+type PluginConfig = {};
+
+interface Plugin {
+  path: string;
+  config: PluginConfig;
 }
 
-const defaultConfig: Config = {};
-
-const explorer = cosmiconfig('lightctl', {
-  sync: true,
-});
-
-// @ts-ignore: lol it's filepath not filePath
-const { config: config, filepath }: { config: Config } = explorer.load() || {
-  config: defaultConfig,
-};
-
-if (filepath) {
-  console.log('Using config from', filepath);
-} else {
-  console.log('No config found, using defaults...');
+export interface Config {
+  luminaire: LuminaireConfig;
+  effect: EffectConfig;
+  group: GroupConfig;
+  room: RoomConfig;
+  scene: SceneConfig;
+  plugins: Plugin[];
 }
 
 export default config;
