@@ -239,6 +239,10 @@ const luminairesUpdated = async (
   const luminaireRequests: Request[] = luminaires.map(luminaire => {
     const state = convert(luminaire.lightSources[0].newState).hsv;
 
+    // TODO: the bri value is a lie, zero is not off
+    const value = Math.max(0, (state.v / 100) * 1.5 - 0.5);
+    // const value = state.v / 100;
+
     return {
       id: luminaire.id,
 
@@ -250,7 +254,7 @@ const luminairesUpdated = async (
         sat: Math.round((state.s / 100) * 254),
         // Our v value is in [0, 100], Hue uses [1, 254]
         // (but seems to accept 0 just fine)
-        bri: Math.round((state.v / 100) * 254),
+        bri: Math.round(value * 254),
 
         // Hue uses hundredths of a second as transitiontime unit
         transitiontime: Math.round(
