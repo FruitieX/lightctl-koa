@@ -233,13 +233,11 @@ const optimizeRequest = (request: Request): OptimizedRequest | null => {
 
 const luminairesUpdated = async (
   luminaires: Luminaire[],
-  transitionTime = 500,
+  transitionTime?: number,
 ) => {
   // Requests array contains Hue API requests to be made, one for each luminaire
   const luminaireRequests: Request[] = luminaires.map(luminaire => {
     const state = convert(luminaire.lightSources[0].newState).hsv;
-
-    const hueTransitionTime = Math.round(transitionTime / 100);
 
     return {
       id: luminaire.id,
@@ -255,7 +253,11 @@ const luminairesUpdated = async (
         bri: Math.round((state.v / 100) * 254),
 
         // Hue uses hundredths of a second as transitiontime unit
-        transitiontime: Math.round(transitionTime / 100),
+        transitiontime: Math.round(
+          (transitionTime !== undefined
+            ? transitionTime
+            : luminaire.transitionTime) / 100,
+        ),
       },
     };
   });
@@ -308,43 +310,42 @@ const luminairesUpdated = async (
 const delay = (ms: number) =>
   new Promise((resolve, reject) => setTimeout(resolve, ms));
 
+let pollLightsTimeout: NodeJS.Timer | undefined;
 const pollLights = async () => {
-  while (true) {
-    try {
-      const oldBridgeLights = state.bridgeLights;
-      const curBridgeLights = <BridgeLights>await req('lights');
-      state.bridgeLights = curBridgeLights;
+  try {
+    const oldBridgeLights = state.bridgeLights;
+    const curBridgeLights = <BridgeLights>await req('lights');
+    state.bridgeLights = curBridgeLights;
 
-      // Get most recent luminaire state for each bridge light
-      const luminaires: Luminaire[] = [];
-      for (const lightId in curBridgeLights) {
-        const hueLuminaire = state.hueLuminaires.find(
-          hueLuminaire => hueLuminaire.lightId === lightId,
-        );
+    // Get most recent luminaire state for each bridge light
+    const luminaires: Luminaire[] = [];
+    for (const lightId in curBridgeLights) {
+      const hueLuminaire = state.hueLuminaires.find(
+        hueLuminaire => hueLuminaire.lightId === lightId,
+      );
 
-        if (!hueLuminaire) continue;
+      if (!hueLuminaire) continue;
 
-        if (
-          state.options.customPollLogic &&
-          state.options.customPollLogic[hueLuminaire.luminaire.id]
-        ) {
-          const pollFun =
-            state.options.customPollLogic[hueLuminaire.luminaire.id];
+      if (
+        state.options.customPollLogic &&
+        state.options.customPollLogic[hueLuminaire.luminaire.id]
+      ) {
+        const pollFun =
+          state.options.customPollLogic[hueLuminaire.luminaire.id];
 
-          pollFun(curBridgeLights[lightId], oldBridgeLights[lightId]);
-        } else {
-          const luminaire = getLuminaire(hueLuminaire.luminaire.id);
-          luminaires.push(luminaire);
-        }
+        pollFun(curBridgeLights[lightId], oldBridgeLights[lightId]);
+      } else {
+        const luminaire = getLuminaire(hueLuminaire.luminaire.id);
+        luminaires.push(luminaire);
       }
-
-      await luminairesUpdated(luminaires, 1000);
-
-      await delay(1000);
-    } catch (e) {
-      console.error(e);
     }
+
+    await luminairesUpdated(luminaires, 1000);
+  } catch (e) {
+    console.error(e);
   }
+
+  pollLightsTimeout = setTimeout(pollLights, 1000);
 };
 
 const pollSensors = async () => {
@@ -514,13 +515,7 @@ export const register = async (app: Koa, options: Options) => {
 
     // Register hue lights as luminaires
     forEachObjIndexed((light, lightId) => {
-      const luminaire = registerLuminaire(light.name, 'hue', 1, [
-        {
-          h: (light.state.hue / 65536) * 360,
-          s: (light.state.sat / 254) * 100,
-          v: (light.state.bri / 254) * 100,
-        },
-      ]);
+      const luminaire = registerLuminaire(light.name, 'hue', 1);
       state.hueLuminaires.push({ luminaire, light, lightId: <string>lightId });
     }, state.bridgeLights);
 
@@ -559,10 +554,12 @@ export const register = async (app: Koa, options: Options) => {
     pollSensors();
   });
 
-  app.on('luminairesUpdated', async (luminaires: Luminaire[]) => {
+  app.on('luminairesUpdated', (luminaires: Luminaire[]) => {
     const gwLuminaires = filterHueLuminaires(luminaires);
     if (gwLuminaires.length) {
       luminairesUpdated(gwLuminaires);
+      pollLightsTimeout && clearTimeout(pollLightsTimeout);
+      pollLightsTimeout = setTimeout(pollLights, 1000);
     }
   });
 };

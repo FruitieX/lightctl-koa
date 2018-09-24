@@ -50,6 +50,8 @@ export const applyEffectsAll = (
       return effectFn(
         accumulatedColors,
         effect.options || {},
+
+        // refactor these into a state object
         luminaireIndex,
         luminaireId,
         numLightSources,

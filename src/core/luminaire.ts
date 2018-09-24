@@ -35,6 +35,7 @@ export interface Luminaire {
   ignore: boolean;
 
   gateway: string;
+  framerate: number;
   lightSources: LightSource[];
 
   // old luminaire state (for transitions)
@@ -51,8 +52,8 @@ export interface Luminaire {
 
 export interface LuminaireUpdateFields {
   id: string;
-  colors: ColourModes.Any[];
-  effects: Effect[];
+  colors?: ColourModes.Any[];
+  effects?: Effect[];
   transitionTime?: number;
 }
 
@@ -98,6 +99,7 @@ const createLuminaire = (luminaireOptions: LuminaireOptions): Luminaire => ({
   brightness:
     luminaireOptions.brightness === undefined ? 1 : luminaireOptions.brightness,
   gateway: 'dummy',
+  framerate: 1,
   lightSources: [...Array(luminaireOptions.numLightSources || 1)].map(
     (_, index) => createLightSource(index, luminaireOptions),
   ),
@@ -116,11 +118,16 @@ const createLuminaire = (luminaireOptions: LuminaireOptions): Luminaire => ({
  * Register a new luminaire into state and notifies listeners about the
  * registration. Returns created luminaire.
  */
-export const registerLuminaire = (id: string, gateway: string): Luminaire => {
+export const registerLuminaire = (
+  id: string,
+  gateway: string,
+  framerate: number,
+): Luminaire => {
   if (!state.app) throw new Error('Plugin not yet initialized');
 
   const luminaire = getLuminaire(id);
   luminaire.gateway = gateway;
+  luminaire.framerate = framerate;
 
   state.app.emit('luminaireRegistered', luminaire);
 
@@ -207,11 +214,11 @@ export const recalcLightSources = (luminaire: Luminaire) => {
 /**
  * Finds and returns luminaire by id. Throws error if luminaire not found.
  */
-export const getLuminaire = (id: string): Luminaire => {
+export const getLuminaire = (id: string, skipRecalc = false): Luminaire => {
   const luminaire = findLuminaire(id);
   if (!luminaire) throw new Error(`Luminaire with id '${id}' not found`);
 
-  recalcLightSources(luminaire);
+  if (!skipRecalc) recalcLightSources(luminaire);
 
   return luminaire;
 };
@@ -249,8 +256,8 @@ const updateLuminaire = ({
   luminaire.transitionTime = transitionTime;
   luminaire.transitionStart = new Date().getTime();
 
-  luminaire.newColors = colors || [];
-  luminaire.newEffects = effects || [];
+  luminaire.newColors = colors || luminaire.newColors;
+  luminaire.newEffects = effects || luminaire.newEffects;
 
   recalcLightSources(luminaire);
 
@@ -274,6 +281,17 @@ export const updateLuminaires = (
   state.app.emit('luminairesUpdated', luminaires);
   return luminaires;
 };
+
+export const forceUpdateAllLuminaires = (transitionTime?: number) =>
+  updateLuminaires(
+    getLuminaireIdList()
+      .map(luminaireId => getLuminaire(luminaireId, true))
+      .filter(luminaire => !luminaire.ignore)
+      .map(luminaire => ({
+        id: luminaire.id,
+        transitionTime,
+      })),
+  );
 
 export const register = async (app: Koa, config: LuminaireConfig) => {
   state.app = app;

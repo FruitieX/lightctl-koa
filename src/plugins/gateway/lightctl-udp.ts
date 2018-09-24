@@ -74,6 +74,7 @@ interface Options {
   contrast: {
     [propName: string]: number[];
   };
+  framerate: 50;
 }
 
 const clients: Client[] = [];
@@ -208,7 +209,11 @@ export const register = async (app: Koa, options: Options) => {
 
       //console.log('lightctl-udp', json, 'registered.');
 
-      const luminaire = registerLuminaire(id, 'lightctl-udp', numLights);
+      const luminaire = registerLuminaire(
+        id,
+        'lightctl-udp',
+        options.framerate,
+      );
 
       let client: Client = {
         addr,
@@ -220,7 +225,7 @@ export const register = async (app: Koa, options: Options) => {
       };
 
       setClientTimeout(client);
-      client.sendInterval = setInterval(send(client), 20);
+      client.sendInterval = setInterval(send(client), 1000 / options.framerate);
 
       clients.push(client);
     }
