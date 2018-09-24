@@ -216,6 +216,12 @@ export const getLuminaire = (id: string): Luminaire => {
   return luminaire;
 };
 
+// TODO: going to be needed by API:s
+/**
+ * Returns a serialized luminaire (without old state & without lightSources)
+ */
+//export const getLuminaires = (id: string):
+
 /**
  * Returns a list of luminaire ID:s.
  */

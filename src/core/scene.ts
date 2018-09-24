@@ -1,6 +1,10 @@
 import * as Koa from 'koa';
 import { ColourModes, convert } from 'chromatism2';
-import { updateLuminaires, LuminaireUpdateFields } from './luminaire';
+import {
+  updateLuminaires,
+  LuminaireUpdateFields,
+  getLuminaire,
+} from './luminaire';
 import { groupExists, getGroup } from './group';
 import { flatten } from 'ramda';
 import { Effect } from './effect';
@@ -33,6 +37,32 @@ interface State {
 
 const state: State = { scenes: [] };
 
+const getLuminaireFields = (
+  luminaireId: string,
+  scene: Scene,
+  sceneTarget: SceneTarget,
+): LuminaireUpdateFields => {
+  const luminaire = getLuminaire(luminaireId);
+
+  const sceneTargetBrightness =
+    sceneTarget.brightness === undefined ? 1 : sceneTarget.brightness;
+
+  const colors = (sceneTarget.colors || scene.colors)
+    .map(color => convert(color).hsv)
+    .map(color => ({
+      ...color,
+      v: color.v * luminaire.brightness * sceneTargetBrightness,
+    }));
+
+  const effects = sceneTarget.effects || scene.effects;
+
+  return {
+    id: luminaire.id,
+    colors,
+    effects,
+  };
+};
+
 /**
  * Activates a scene by id. Throws if scene not found.
  */
@@ -43,35 +73,20 @@ export const activateScene = (id: string) => {
 
   state.activeScene = scene;
 
-  // TODO: get rid of janky type assertions
+  // TODO: get rid of janky type assertions:
+  // https://github.com/types/npm-ramda/issues/356
   const fieldsList = <LuminaireUpdateFields[]>flatten(
     scene.targets.map(target => {
-      const brightness =
-        target.brightness === undefined ? 1 : target.brightness;
-
-      const colors = (target.colors || scene.colors)
-        .map(color => convert(color).hsv)
-        .map(color => ({ ...color, v: color.v * brightness }));
-
-      const effects = target.effects || scene.effects;
-
-      let fields = {
-        id: target.id,
-        colors,
-        effects,
-      };
-
       if (groupExists(target.id)) {
         // If this is a group, return an array of fields (one element for each
         // luminaire)
         const group = getGroup(target.id);
 
-        return group.luminaires.map(luminaireId => ({
-          ...fields,
-          id: luminaireId,
-        }));
+        return group.luminaires.map(luminaireId =>
+          getLuminaireFields(luminaireId, scene, target),
+        );
       } else {
-        return fields;
+        return getLuminaireFields(target.id, scene, target);
       }
     }),
   );
