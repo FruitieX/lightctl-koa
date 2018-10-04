@@ -50,6 +50,15 @@ export interface Luminaire {
   transitionStart: number; // time when transition started
 }
 
+export interface SerializedLuminaire {
+  id: string;
+  gateway: string;
+  pos?: Coordinate;
+  dimensions?: Coordinate;
+  colors: ColourModes.Any[];
+  effects: Effect[];
+}
+
 export interface LuminaireUpdateFields {
   id: string;
   colors?: ColourModes.Any[];
@@ -223,11 +232,18 @@ export const getLuminaire = (id: string, skipRecalc = false): Luminaire => {
   return luminaire;
 };
 
-// TODO: going to be needed by API:s
 /**
- * Returns a serialized luminaire (without old state & without lightSources)
+ * Returns a list of serialized luminaires (without old state & without lightSources)
  */
-//export const getLuminaires = (id: string):
+export const getLuminaires = (): SerializedLuminaire[] =>
+  state.luminaires.map(luminaire => ({
+    id: luminaire.id,
+    gateway: luminaire.gateway,
+    pos: luminaire.pos,
+    dimensions: luminaire.dimensions,
+    colors: luminaire.newColors,
+    effects: luminaire.newEffects,
+  }));
 
 /**
  * Returns a list of luminaire ID:s.
