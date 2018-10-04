@@ -1,5 +1,11 @@
 import * as Koa from 'koa';
-import { getLuminaireIdList, getLuminaire, Luminaire } from './luminaire';
+import {
+  getLuminaireIdList,
+  getLuminaire,
+  Luminaire,
+  SerializedLuminaire,
+  getLuminaires,
+} from './luminaire';
 import { addGroup, createGroup } from './group';
 
 export interface Coordinate {
@@ -39,9 +45,9 @@ export const getRooms = () => state.rooms;
  * @param room The room to test against
  */
 const getLuminairesInRoom = (
-  luminaires: Luminaire[],
+  luminaires: SerializedLuminaire[],
   room: Room,
-): Luminaire[] =>
+): SerializedLuminaire[] =>
   luminaires.filter(luminaire => {
     // Luminaires without positions are never in any room
     if (!luminaire.pos) return false;
@@ -63,7 +69,7 @@ const getLuminairesInRoom = (
  * Recalculates room luminaires and recreates groups based on results.
  */
 const updateRooms = () => {
-  const luminaires = getLuminaireIdList().map(getLuminaire);
+  const luminaires = getLuminaires();
 
   state.rooms.forEach(room => {
     const roomLuminaires = getLuminairesInRoom(luminaires, room);
