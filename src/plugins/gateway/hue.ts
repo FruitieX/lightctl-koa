@@ -116,17 +116,31 @@ const lightByLuminaireId = (luminaireId: string): BridgeLight | undefined => {
   return undefined;
 };
 
-const req = async (path: string, method = 'get', body?: object) => {
-  return await request({
-    url: `http://${state.options.bridgeAddr}/api/${
-      state.options.username
-    }/${path}`,
-    timeout: 1000,
-    json: true,
-    method,
-    body: body,
+const req = (path: string, method = 'get', body?: object): Promise<any> =>
+  new Promise(async resolve => {
+    const doRequest = async () => {
+      try {
+        const result = await request({
+          url: `http://${state.options.bridgeAddr}/api/${
+            state.options.username
+          }/${path}`,
+          timeout: 1000,
+          json: true,
+          method,
+          body: body,
+        });
+
+        resolve(result);
+      } catch (e) {
+        console.log(`Error "${e.message}" while performing request to ${path}, retrying...`);
+        await delay(1000);
+
+        doRequest();
+      }
+    };
+
+    doRequest();
   });
-};
 
 const createGroups = async (groups: Group[]) => {
   for (const group of groups) {
