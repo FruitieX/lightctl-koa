@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "nodemon --watch 'src/**/*' --watch lightctl.config.ts -e ts,tsx --exec 'ts-node' ./src/server.ts"
+    "start": "nodemon --watch 'src/**/*' --watch lightctl.config.ts --watch server.ts -e ts,tsx --exec 'ts-node' ./index.ts",
+    "build": "tsc --project .",
+    "start:release": "npm run build && node ./build/index.js"
   },
   "dependencies": {
     "chromatism2": "^3.0.2",

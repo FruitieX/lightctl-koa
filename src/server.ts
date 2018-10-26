@@ -8,8 +8,7 @@ import * as group from './core/group';
 import * as room from './core/room';
 import * as scene from './core/scene';
 
-// Perform initialization
-(async () => {
+export const init = async () => {
   const app = new Koa();
 
   // Register core plugins
@@ -26,4 +25,4 @@ import * as scene from './core/scene';
   }
 
   app.emit('start');
-})();
+};
