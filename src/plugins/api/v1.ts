@@ -7,22 +7,21 @@ import {
   getLuminaire,
 } from '../../core/luminaire';
 import { activateScene } from '../../core/scene';
+import { updateLuminaireOrGroup } from '../../core/group';
 
 interface Options {
   port?: number;
 }
 
 const updateLuminaire_: Router.IMiddleware = (ctx, next) => {
-  ctx.body = updateLuminaires([
-    {
-      id: ctx.params.id,
-      colors: ctx.request.body.colors || [],
-      effects: ctx.request.body.effects || [],
-      transitionTime: isNaN(ctx.request.body.transitionTime)
-        ? 500
-        : ctx.request.body.transitionTime,
-    },
-  ]);
+  ctx.body = updateLuminaireOrGroup({
+    id: ctx.params.id,
+    colors: ctx.request.body.colors || [],
+    effects: ctx.request.body.effects || [],
+    transitionTime: isNaN(ctx.request.body.transitionTime)
+      ? 500
+      : ctx.request.body.transitionTime,
+  });
 };
 
 const activateScene_: Router.IMiddleware = (ctx, next) => {
